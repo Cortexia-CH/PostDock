@@ -36,10 +36,10 @@ vars: check-env
 
 # docker management
 
-up:
-	docker-compose -f ./docker-compose/latest.yml up pgmaster pgslave1 pgslave2 pgslave3 pgslave4 pgpool backup
+build:
+	docker-compose -f ./docker-compose/latest.yml build
 
-start:
+up:
 	docker-compose -f ./docker-compose/latest.yml up -d pgmaster pgslave1 pgslave2 pgslave3 pgslave4 pgpool backup
 
 stop:
@@ -48,27 +48,79 @@ stop:
 down:
 	docker-compose -f ./docker-compose/latest.yml down
 
-
-# control and maintenance
-
 logs:
 	docker-compose -f ./docker-compose/latest.yml logs --tail 20 -f $(names)
 
-map: check-env
+ps:
+	docker ps --format 'table {{.Image}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}'
+
+
+# PostgreSQL
+
+pg-map: check-env
 	docker-compose -f ./docker-compose/latest.yml exec pgmaster bash -c \
 		'gosu postgres psql $(REPLICATION_DB) -c "SELECT * FROM $$(get_repmgr_schema).$(REPMGR_NODES_TABLE)"'
 
-live: check-env
+pg-live: check-env
 	docker-compose -f ./docker-compose/latest.yml exec pgmaster bash -c \
 		'gosu postgres repmgr cluster show'
 
-status: check-env
+pg-master: check-env
 	docker-compose -f ./docker-compose/latest.yml exec pgmaster bash -c \
+		'/usr/local/bin/cluster/healthcheck/is_major_master.sh'
+
+
+# pgpool
+
+pgpool-status: check-env
+	docker-compose -f ./docker-compose/latest.yml exec pgpool bash -c \
 		'PGPASSWORD=$(CHECK_PASSWORD) psql -U $(CHECK_USER) template1 -c "show pool_nodes"'
 
-primary: check-env
+pgpool-enough: check-env
+	docker-compose -f ./docker-compose/latest.yml exec pgpool bash -c \
+		'/usr/local/bin/pgpool/has_enough_backends.sh'
+
+pgpool-write: check-env
 	docker-compose -f ./docker-compose/latest.yml exec pgpool bash -c \
 		'/usr/local/bin/pgpool/has_write_node.sh'
 
-ps:
-	docker ps --format 'table {{.Image}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}'
+
+# Barman
+
+barman-diagnose: check-env
+	docker-compose -f ./docker-compose/latest.yml exec backup bash -c \
+		'barman diagnose'
+
+barman-list-server: check-env
+	docker-compose -f ./docker-compose/latest.yml exec backup bash -c \
+		'barman list-server'
+
+barman-check-all: check-env
+	docker-compose -f ./docker-compose/latest.yml exec backup bash -c \
+		'barman check all'
+
+barman-backup-all: check-env
+	docker-compose -f ./docker-compose/latest.yml exec backup bash -c \
+		'barman backup all'
+
+# Barman > server
+
+barman-check: check-env
+	docker-compose -f ./docker-compose/latest.yml exec backup bash -c \
+		'barman check `barman list-server --minimal`'
+
+barman-status: check-env
+	docker-compose -f ./docker-compose/latest.yml exec backup bash -c \
+		'barman status `barman list-server --minimal`'
+
+barman-show: check-env
+	docker-compose -f ./docker-compose/latest.yml exec backup bash -c \
+		'barman show-server `barman list-server --minimal`'
+
+barman-backup: check-env
+	docker-compose -f ./docker-compose/latest.yml exec backup bash -c \
+		'barman backup `barman list-server --minimal`'
+
+barman-list-backup: check-env
+	docker-compose -f ./docker-compose/latest.yml exec backup bash -c \
+		'barman list-backup `barman list-server --minimal`'
