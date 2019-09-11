@@ -43,10 +43,10 @@ start:
 	docker-compose -f ./docker-compose/latest.yml up -d pgmaster pgslave1 pgslave2 pgslave3 pgslave4 pgpool backup
 
 stop:
-	docker-compose stop
+	docker-compose -f ./docker-compose/latest.yml stop
 
 down:
-	docker-compose down
+	docker-compose -f ./docker-compose/latest.yml down
 
 
 # control and maintenance
