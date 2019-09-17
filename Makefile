@@ -12,6 +12,7 @@ endif
 init:
 ifeq ($(wildcard .env),)
 	cp .env.sample .env
+	make ssh-keys
 endif
 
 vars: check-env
@@ -28,13 +29,23 @@ vars: check-env
 	@echo '  CHECK_PASSWORD: $(CHECK_PASSWORD)'
 	@echo ''
 	@echo 'barman'
+	@echo '  CLUSTER_NAME: $(CLUSTER_NAME)'
 	@echo '  REPLICATION_USER: $(REPLICATION_USER)'
 	@echo '  REPLICATION_PASSWORD: $(REPLICATION_PASSWORD)'
 	@echo '  REPLICATION_HOST: $(REPLICATION_HOST)'
+	@echo '  REPLICATION_DB: $(REPLICATION_DB)'
 	@echo '  REPMGR_NODES_TABLE: $(REPMGR_NODES_TABLE)'
 
 
+ssh-keys:
+	mkdir -p /tmp/.ssh/keys
+	cd /tmp/.ssh/keys && ssh-keygen -t rsa -C "internal@pgpool.com" -f /tmp/.ssh/keys/id_rsa
+
 # docker management
+
+pull:
+	docker-compose -f ./docker-compose/latest.yml pull
+	docker-compose -f ./docker-compose/latest.yml build --pull
 
 build:
 	docker-compose -f ./docker-compose/latest.yml build
@@ -48,7 +59,7 @@ stop:
 down:
 	docker-compose -f ./docker-compose/latest.yml down
 
-logs:
+logs: up
 	docker-compose -f ./docker-compose/latest.yml logs --tail 20 -f $(names)
 
 ps:
@@ -80,16 +91,12 @@ pgpool-enough: check-env
 	docker-compose -f ./docker-compose/latest.yml exec pgpool bash -c \
 		'/usr/local/bin/pgpool/has_enough_backends.sh'
 
-pgpool-write: check-env
+pgpool-write-mode: check-env
 	docker-compose -f ./docker-compose/latest.yml exec pgpool bash -c \
 		'/usr/local/bin/pgpool/has_write_node.sh'
 
 
 # Barman
-
-barman-diagnose: check-env
-	docker-compose -f ./docker-compose/latest.yml exec backup bash -c \
-		'barman diagnose'
 
 barman-list-server: check-env
 	docker-compose -f ./docker-compose/latest.yml exec backup bash -c \
@@ -102,6 +109,10 @@ barman-check-all: check-env
 barman-backup-all: check-env
 	docker-compose -f ./docker-compose/latest.yml exec backup bash -c \
 		'barman backup all'
+
+barman-diagnose: check-env
+	docker-compose -f ./docker-compose/latest.yml exec backup bash -c \
+		'barman diagnose'
 
 # Barman > server
 
