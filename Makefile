@@ -1,5 +1,19 @@
 # environment
 
+# BACKUP_ID is used to specify which backup should be the target of given backup command, for instance:
+# $ BACKUP_ID=20190924T125045 make barman-check-backup
+#
+# All ids can be listed with
+# $ make barman-list-backup
+#
+# Barman allows you to use special keywords to identify a specific backup:
+# - last/latest: identifies the newest backup in the catalog
+# - first/oldest: identifies the oldest backup in the catalog
+BACKUP_ID ?= oldest
+
+readme:
+	open "doc/Forming a PostgreSQL cluster within Kubernetes - Dmitriy Paunin - Medium.pdf"
+
 check-env:
 # raise an error if .env file does not exist
 ifeq ($(wildcard .env),)
@@ -133,6 +147,7 @@ barman-diagnose: check-env
 		'barman diagnose'
 
 # Barman > server
+# (All executed on `barman list-server --minimal`, i.e. pgmaster)
 
 barman: barman-show barman-status barman-check barman-list-backup
 
@@ -144,14 +159,34 @@ barman-status: check-env
 	docker-compose -f ./docker-compose/latest-simple.yml exec backup bash -c \
 		'barman status `barman list-server --minimal`'
 
+barman-replication-status: check-env
+	docker-compose -f ./docker-compose/latest-simple.yml exec backup bash -c \
+		'barman replication-status `barman list-server --minimal`'
+
 barman-show: check-env
 	docker-compose -f ./docker-compose/latest-simple.yml exec backup bash -c \
 		'barman show-server `barman list-server --minimal`'
+
+barman-list-backup: check-env
+	docker-compose -f ./docker-compose/latest-simple.yml exec backup bash -c \
+		'barman list-backup `barman list-server --minimal`'
+
+
+# Barman > backup 
+# (All executed on `barman list-server --minimal`, i.e. pgmaster)
 
 barman-backup: check-env
 	docker-compose -f ./docker-compose/latest-simple.yml exec backup bash -c \
 		'barman backup `barman list-server --minimal`'
 
-barman-list-backup: check-env
+barman-check-backup: check-env
 	docker-compose -f ./docker-compose/latest-simple.yml exec backup bash -c \
-		'barman list-backup `barman list-server --minimal`'
+		'barman check-backup `barman list-server --minimal` $(BACKUP_ID)'
+
+barman-show-backup: check-env
+	docker-compose -f ./docker-compose/latest-simple.yml exec backup bash -c \
+		'barman show-backup `barman list-server --minimal` $(BACKUP_ID)'
+
+barman-delete-backup: check-env
+	docker-compose -f ./docker-compose/latest-simple.yml exec backup bash -c \
+		'barman check-backup `barman list-server --minimal` $(BACKUP_ID)'
