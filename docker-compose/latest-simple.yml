@@ -13,6 +13,7 @@ volumes:
     pgslave2:
     pgslave3:
     backup:
+    pgadmin:
 
 services:
     pgmaster:
@@ -183,3 +184,19 @@ services:
             cluster:
                 aliases:
                     - pgpool
+    pgadmin:
+        image: dpage/pgadmin4
+        depends_on:
+            - pgpool
+        ports:
+            - "${PGADMIN_LISTEN_PORT}:5050"
+        environment:
+            PGADMIN_LISTEN_PORT: ${PGADMIN_LISTEN_PORT}
+            PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+            PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+        volumes:
+            - pgadmin:/var/lib/pgadmin/data
+        networks:
+            cluster:
+                aliases:
+                    - pgadmin
