@@ -23,6 +23,10 @@ ifeq ($(wildcard .env),)
 	make ssh-keys
 endif
 
+ssh-keys:
+	mkdir -p /tmp/.ssh/keys
+	cd /tmp/.ssh/keys && ssh-keygen -t rsa -C "internal@pgpool.com" -f /tmp/.ssh/keys/id_rsa
+
 vars: check-env check-keys
 	@echo 'postgres'
 	@echo '  POSTGRES_PASSWORD: $(POSTGRES_PASSWORD)'
@@ -36,6 +40,11 @@ vars: check-env check-keys
 	@echo '  CHECK_USER: $(CHECK_USER)'
 	@echo '  CHECK_PASSWORD: $(CHECK_PASSWORD)'
 	@echo ''
+	@echo 'pgadmin'
+	@echo '  PGADMIN_LISTEN_PORT: $(PGADMIN_LISTEN_PORT)'
+	@echo '  PGADMIN_DEFAULT_EMAIL: $(PGADMIN_DEFAULT_EMAIL)'
+	@echo '  PGADMIN_DEFAULT_PASSWORD: $(PGADMIN_DEFAULT_PASSWORD)'
+	@echo ''
 	@echo 'barman'
 	@echo '  CLUSTER_NAME: $(CLUSTER_NAME)'
 	@echo '  REPLICATION_USER: $(REPLICATION_USER)'
@@ -44,10 +53,7 @@ vars: check-env check-keys
 	@echo '  REPLICATION_DB: $(REPLICATION_DB)'
 	@echo '  REPMGR_NODES_TABLE: $(REPMGR_NODES_TABLE)'
 
-
-ssh-keys:
-	mkdir -p /tmp/.ssh/keys
-	cd /tmp/.ssh/keys && ssh-keygen -t rsa -C "internal@pgpool.com" -f /tmp/.ssh/keys/id_rsa
+status: pg-master pgpool-enough barman-check barman-list-backup
 
 # docker management
 
@@ -59,7 +65,7 @@ build: check-env check-keys
 	docker-compose -f ./docker-compose/latest-simple.yml build
 
 up:
-	docker-compose -f ./docker-compose/latest-simple.yml up -d pgmaster pgslave1 pgslave2 pgslave3 pgpool backup
+	docker-compose -f ./docker-compose/latest-simple.yml up -d
 
 stop:
 	docker-compose -f ./docker-compose/latest-simple.yml stop
