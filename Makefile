@@ -72,23 +72,23 @@ status: pg-master pgpool-enough barman-check barman-list-backup
 # docker management
 
 pull:
-	docker-compose -f ./docker-compose/latest-simple.yml pull
-	docker-compose -f ./docker-compose/latest-simple.yml build --pull
+	docker-compose -f ./docker-compose/latest-simple.yml pull $(services)
+	docker-compose -f ./docker-compose/latest-simple.yml build --pull $(services)
 
 build: check-env check-keys
-	docker-compose -f ./docker-compose/latest-simple.yml build
+	docker-compose -f ./docker-compose/latest-simple.yml build $(services)
 
 up:
-	docker-compose -f ./docker-compose/latest-simple.yml up -d
+	docker-compose -f ./docker-compose/latest-simple.yml up -d $(services)
 
 stop:
-	docker-compose -f ./docker-compose/latest-simple.yml stop
+	docker-compose -f ./docker-compose/latest-simple.yml stop $(services)
 
 down:
-	docker-compose -f ./docker-compose/latest-simple.yml down
+	docker-compose -f ./docker-compose/latest-simple.yml down $(services)
 
 logs: up
-	docker-compose -f ./docker-compose/latest-simple.yml logs --tail 20 -f $(names)
+	docker-compose -f ./docker-compose/latest-simple.yml logs --tail 20 -f $(services)
 
 ps:
 	docker ps --format 'table {{.Image}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}'
