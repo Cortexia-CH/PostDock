@@ -81,14 +81,13 @@ ps:
 
 config-local: check-env
 	DOCKER_TAG=latest \
-		SUBDOMAIN=pgcluster \
-		DOMAIN=local \
-		docker-compose \
-			-f docker-compose.common.yml \
-			-f docker-compose.build.yml \
-			-f docker-compose.dev.yml \
-		config > docker-stack.yml
-
+	SUBDOMAIN=pgcluster \
+	DOMAIN=local \
+	docker-compose \
+		-f docker-compose.common.yml \
+		-f docker-compose.build.yml \
+		-f docker-compose.dev.yml \
+	config > docker-stack.yml
 
 pull: config-local
 	docker-compose -f docker-stack.yml pull $(services)
@@ -123,9 +122,9 @@ push-qa: check-env login
 		DOMAIN=cortexia.io \
 		docker-compose \
 			-f docker-compose.common.yml \
-			-f docker-compose.build.yml \
 			-f docker-compose.images.yml \
 			-f docker-compose.networks.yml \
+			-f docker-compose.build.yml \
 		config > docker-stack.yml
 
 	# build docker image

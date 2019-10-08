@@ -1,5 +1,9 @@
 version: '3.6'
 
+networks:
+    cluster:
+        driver: bridge
+
 volumes:
     pgmaster:
     pgslave1:
@@ -38,6 +42,10 @@ services:
             - 5422:5432
         volumes:
             - pgmaster:/var/lib/postgresql/data
+        networks:
+            cluster:
+                aliases:
+                    - pgmaster
 
     pgslave1:
         environment:
@@ -54,6 +62,10 @@ services:
             - 5441:5432
         volumes:
             - pgslave1:/var/lib/postgresql/data
+        networks:
+            cluster:
+                aliases:
+                    - pgslave1
 
     pgslave2:
         environment:
@@ -69,6 +81,10 @@ services:
             - 5442:5432
         volumes:
             - pgslave2:/var/lib/postgresql/data
+        networks:
+            cluster:
+                aliases:
+                    - pgslave2
 
     pgslave3:
         environment:
@@ -86,6 +102,10 @@ services:
             - 5443:5432
         volumes:
             - pgslave3:/var/lib/postgresql/data
+        networks:
+            cluster:
+                aliases:
+                    - pgslave3
 
     backup:
         environment:
@@ -99,6 +119,10 @@ services:
             BACKUP_SCHEDULE: "*/30 */5 * * *"
         volumes:
             - backup:/var/backups
+        networks:
+            cluster:
+                aliases:
+                    - backup
 
     pgpool:
         environment:
@@ -126,8 +150,13 @@ services:
         ports:
             - 5430:5432
             - 9898:9898 # PCP
+        networks:
+            cluster:
+                aliases:
+                    - pgpool
 
     pgadmin:
+        image: dpage/pgadmin4
         depends_on:
             - pgpool
         ports:
@@ -138,3 +167,7 @@ services:
             PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
         volumes:
             - pgadmin:/var/lib/pgadmin/data
+        networks:
+            cluster:
+                aliases:
+                    - pgadmin

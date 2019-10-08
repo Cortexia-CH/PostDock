@@ -18,6 +18,3 @@ services:
 
     pgpool:
         image: cortexia/pgpool
-    
-    pgadmin:
-        image: dpage/pgadmin4

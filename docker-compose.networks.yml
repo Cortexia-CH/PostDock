@@ -1,48 +1,34 @@
 version: '3.6'
 
 networks:
-    cluster:
-        driver: bridge
+  traefik-public:
+    external: true
 
 services:
     pgmaster:
         networks:
-            cluster:
-                aliases:
-                    - pgmaster
+            - ${TRAEFIK_PUBLIC_NETWORK}
 
     pgslave1:
         networks:
-            cluster:
-                aliases:
-                    - pgslave1
+            - ${TRAEFIK_PUBLIC_NETWORK}
 
     pgslave2:
         networks:
-            cluster:
-                aliases:
-                    - pgslave2
+            - ${TRAEFIK_PUBLIC_NETWORK}
 
     pgslave3:
         networks:
-            cluster:
-                aliases:
-                    - pgslave3
+            - ${TRAEFIK_PUBLIC_NETWORK}
 
     backup:
         networks:
-            cluster:
-                aliases:
-                    - backup
+            - ${TRAEFIK_PUBLIC_NETWORK}
 
     pgpool:
         networks:
-            cluster:
-                aliases:
-                    - pgpool
+            - ${TRAEFIK_PUBLIC_NETWORK}
 
     pgadmin:
         networks:
-            cluster:
-                aliases:
-                    - pgadmin
+            - ${TRAEFIK_PUBLIC_NETWORK}

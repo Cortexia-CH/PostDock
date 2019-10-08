@@ -6,6 +6,21 @@ services:
             context: ./src
             dockerfile: Postgres-11-Repmgr-4.0.Dockerfile
 
+    pgslave1:
+        build:
+            context: ./src
+            dockerfile: Postgres-11-Repmgr-4.0.Dockerfile
+
+    pgslave2:
+        build:
+            context: ./src
+            dockerfile: Postgres-11-Repmgr-4.0.Dockerfile
+
+    pgslave3:
+        build:
+            context: ./src
+            dockerfile: Postgres-11-Repmgr-4.0.Dockerfile
+
     backup:
         build:
             context: ./src

@@ -1,0 +1,48 @@
+version: '3.5'
+
+services: 
+  backup:
+    deploy:
+      labels:
+          - traefik.frontend.rule=Host:backup.${SUBDOMAIN}.${DOMAIN}
+          - traefik.frontend.passHostHeader=true
+          - traefik.enable=true
+          - traefik.port=80
+          - traefik.tags=${TRAEFIK_PUBLIC_TAG}
+          - traefik.docker.network=${TRAEFIK_PUBLIC_NETWORK}
+          # Traefik service that listens to HTTP
+          - traefik.redirectorservice.frontend.entryPoints=http
+          - traefik.redirectorservice.frontend.redirect.entryPoint=https
+          # Traefik service that listens to HTTPS
+          - traefik.webservice.frontend.entryPoints=https
+
+  pgpool:
+    deploy:
+      labels:
+          - traefik.frontend.rule=Host:${SUBDOMAIN}.${DOMAIN}
+          - traefik.frontend.passHostHeader=true
+          - traefik.enable=true
+          - traefik.port=5430
+          - traefik.tags=${TRAEFIK_PUBLIC_TAG}
+          - traefik.docker.network=${TRAEFIK_PUBLIC_NETWORK}
+          # Traefik service that listens to HTTP
+          - traefik.redirectorservice.frontend.entryPoints=http
+          - traefik.redirectorservice.frontend.redirect.entryPoint=https
+          # Traefik service that listens to HTTPS
+          - traefik.webservice.frontend.entryPoints=https
+
+  pgadmin:
+    deploy:
+      labels:
+          - traefik.frontend.rule=Host:pgadmin.${SUBDOMAIN}.${DOMAIN}
+          - traefik.frontend.passHostHeader=true
+          - traefik.enable=true
+          - traefik.port=80
+          - traefik.tags=${TRAEFIK_PUBLIC_TAG}
+          - traefik.docker.network=${TRAEFIK_PUBLIC_NETWORK}
+          # Traefik service that listens to HTTP
+          - traefik.redirectorservice.frontend.entryPoints=http
+          - traefik.redirectorservice.frontend.redirect.entryPoint=https
+          # Traefik service that listens to HTTPS
+          - traefik.webservice.frontend.entryPoints=https
+

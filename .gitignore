@@ -1,2 +1,3 @@
 .env
 tmp
+docker-stack.yml
