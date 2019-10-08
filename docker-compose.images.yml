@@ -1,0 +1,23 @@
+version: '3.6'
+
+services:
+    pgmaster:
+        image: cortexia/pginstance
+
+    pgslave1:
+        image: cortexia/pginstance
+
+    pgslave2:
+        image: cortexia/pginstance
+
+    pgslave3:
+        image: cortexia/pginstance
+
+    backup:
+        image: cortexia/backup
+
+    pgpool:
+        image: cortexia/pgpool
+    
+    pgadmin:
+        image: dpage/pgadmin4

@@ -17,6 +17,8 @@ readme:
 check-env:
 # raise an error if .env file does not exist
 ifeq ($(wildcard .env),)
+	cp .sample.env .env
+	@echo "Generated .env"
 	@echo ".env file is missing. Create it first by calling make init"
 	@exit 1
 else
@@ -71,27 +73,80 @@ status: pg-master pgpool-enough barman-check barman-list-backup
 
 # docker management
 
-pull:
-	docker-compose -f ./docker-compose/latest-simple.yml pull $(services)
-	docker-compose -f ./docker-compose/latest-simple.yml build --pull $(services)
-
-build: check-env check-keys
-	docker-compose -f ./docker-compose/latest-simple.yml build $(services)
-
-up:
-	docker-compose -f ./docker-compose/latest-simple.yml up -d $(services)
-
-stop:
-	docker-compose -f ./docker-compose/latest-simple.yml stop $(services)
-
-down:
-	docker-compose -f ./docker-compose/latest-simple.yml down $(services)
-
-logs: up
-	docker-compose -f ./docker-compose/latest-simple.yml logs --tail 20 -f $(services)
+login:
+	docker login
 
 ps:
 	docker ps --format 'table {{.Image}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}'
+
+config-local: check-env
+	DOCKER_TAG=latest \
+		SUBDOMAIN=pgcluster \
+		DOMAIN=local \
+		docker-compose \
+			-f docker-compose.common.yml \
+			-f docker-compose.build.yml \
+			-f docker-compose.dev.yml \
+		config > docker-stack.yml
+
+
+pull: config-local
+	docker-compose -f docker-stack.yml pull $(services)
+	docker-compose -f docker-stack.yml build --pull $(services)
+
+build: config-local check-env check-keys
+	docker-compose -f docker-stack.yml build $(services)
+
+up: config-local
+	docker-compose -f docker-stack.yml up -d $(services)
+
+down:
+	docker-compose -f docker-stack.yml down $(services)
+
+stop:
+	docker-compose -f docker-stack.yml stop $(services)
+
+logs: up
+	docker-compose -f docker-stack.yml logs --tail 20 -f $(services)
+
+
+## Release
+
+push-qa: check-env login
+	# update tags
+	git tag -f qa
+	git push --tags --force
+
+	# compile docker-compose file
+	DOCKER_TAG=qa \
+		SUBDOMAIN=pgcluster-qa \
+		DOMAIN=cortexia.io \
+		docker-compose \
+			-f docker-compose.common.yml \
+			-f docker-compose.build.yml \
+			-f docker-compose.images.yml \
+			-f docker-compose.networks.yml \
+		config > docker-stack.yml
+
+	# build docker image
+	DOCKER_TAG=qa docker-compose -f docker-stack.yml build $(services)
+	DOCKER_TAG=qa docker-compose -f docker-stack.yml push $(services)
+
+deploy-qa: check-env
+	DOCKER_TAG=qa \
+		SUBDOMAIN=pgcluster-qa \
+		DOMAIN=cortexia.io \
+		STACK_NAME=pgcluster-qa \
+		TRAEFIK_PUBLIC_TAG=${TRAEFIK_PUBLIC_TAG} \
+		docker-compose \
+			-f docker-compose.common.yml \
+			-f docker-compose.images.yml \
+			-f docker-compose.networks.yml \
+			-f docker-compose.deploy.yml \
+		config > docker-stack.yml
+
+	docker-auto-labels docker-stack.yml
+	docker stack deploy -c docker-stack.yml --with-registry-auth pgcluster-qa
 
 
 # PostgreSQL
@@ -99,15 +154,15 @@ ps:
 pg: pg-live pg-master
 
 pg-map: check-env
-	docker-compose -f ./docker-compose/latest-simple.yml exec pgmaster bash -c \
+	docker-compose -f docker-stack.yml exec pgmaster bash -c \
 		'gosu postgres psql $(REPLICATION_DB) -c "SELECT * FROM $$(get_repmgr_schema).$(REPMGR_NODES_TABLE)"'
 
 pg-live: check-env
-	docker-compose -f ./docker-compose/latest-simple.yml exec pgmaster bash -c \
+	docker-compose -f docker-stack.yml exec pgmaster bash -c \
 		'gosu postgres repmgr cluster show'
 
 pg-master: check-env
-	docker-compose -f ./docker-compose/latest-simple.yml exec pgmaster bash -c \
+	docker-compose -f docker-stack.yml exec pgmaster bash -c \
 		'/usr/local/bin/cluster/healthcheck/is_major_master.sh'
 
 
@@ -116,34 +171,34 @@ pg-master: check-env
 pgpool: pgpool-status pgpool-enough pgpool-write-mode
 
 pgpool-status: check-env
-	docker-compose -f ./docker-compose/latest-simple.yml exec pgpool bash -c \
+	docker-compose -f docker-stack.yml exec pgpool bash -c \
 		'PGPASSWORD=$(CHECK_PASSWORD) psql -h pgpool -U $(CHECK_USER) template1 -c "show pool_nodes"'
 
 pgpool-enough: check-env
-	docker-compose -f ./docker-compose/latest-simple.yml exec pgpool bash -c \
+	docker-compose -f docker-stack.yml exec pgpool bash -c \
 		'/usr/local/bin/pgpool/has_enough_backends.sh'
 
 pgpool-write-mode: check-env
-	docker-compose -f ./docker-compose/latest-simple.yml exec pgpool bash -c \
+	docker-compose -f docker-stack.yml exec pgpool bash -c \
 		'/usr/local/bin/pgpool/has_write_node.sh'
 
 
 # Barman
 
 barman-list-server: check-env
-	docker-compose -f ./docker-compose/latest-simple.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman list-server'
 
 barman-check-all: check-env
-	docker-compose -f ./docker-compose/latest-simple.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman check all'
 
 barman-backup-all: check-env
-	docker-compose -f ./docker-compose/latest-simple.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman backup all'
 
 barman-diagnose: check-env
-	docker-compose -f ./docker-compose/latest-simple.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman diagnose'
 
 # Barman > server
@@ -152,23 +207,23 @@ barman-diagnose: check-env
 barman: barman-show barman-status barman-check barman-list-backup
 
 barman-check: check-env
-	docker-compose -f ./docker-compose/latest-simple.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman check `barman list-server --minimal`'
 
 barman-status: check-env
-	docker-compose -f ./docker-compose/latest-simple.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman status `barman list-server --minimal`'
 
 barman-replication-status: check-env
-	docker-compose -f ./docker-compose/latest-simple.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman replication-status `barman list-server --minimal`'
 
 barman-show: check-env
-	docker-compose -f ./docker-compose/latest-simple.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman show-server `barman list-server --minimal`'
 
 barman-list-backup: check-env
-	docker-compose -f ./docker-compose/latest-simple.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman list-backup `barman list-server --minimal`'
 
 
@@ -176,17 +231,17 @@ barman-list-backup: check-env
 # (All executed on `barman list-server --minimal`, i.e. pgmaster)
 
 barman-backup: check-env
-	docker-compose -f ./docker-compose/latest-simple.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman backup `barman list-server --minimal`'
 
 barman-check-backup: check-env
-	docker-compose -f ./docker-compose/latest-simple.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman check-backup `barman list-server --minimal` $(BACKUP_ID)'
 
 barman-show-backup: check-env
-	docker-compose -f ./docker-compose/latest-simple.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman show-backup `barman list-server --minimal` $(BACKUP_ID)'
 
 barman-delete-backup: check-env
-	docker-compose -f ./docker-compose/latest-simple.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman check-backup `barman list-server --minimal` $(BACKUP_ID)'

@@ -1,11 +1,4 @@
-##########################################################################
-##                         AUTO-GENERATED FILE                          ##
-##########################################################################
-
-version: '2'
-networks:
-    cluster:
-        driver: bridge
+version: '3.6'
 
 volumes:
     pgmaster:
@@ -17,9 +10,6 @@ volumes:
 
 services:
     pgmaster:
-        build:
-            context: ../src
-            dockerfile: Postgres-11-Repmgr-4.0.Dockerfile
         environment:
             NODE_ID: 1 # Integer number of node (not required if can be extracted from NODE_NAME var, e.g. node-45 => 1045)
             NODE_NAME: node1 # Node name
@@ -44,21 +34,12 @@ services:
             REPLICATION_DB: replication_db # default is replication_db
             REPLICATION_USER: replication_user # default is replication_user
             REPLICATION_PASSWORD: replication_pass # default is replication_pass
-            
         ports:
             - 5422:5432
         volumes:
             - pgmaster:/var/lib/postgresql/data
-            - ./ssh/:/tmp/.ssh/keys
-        networks:
-            cluster:
-                aliases:
-                    - pgmaster
-#<<< Branch 1
+
     pgslave1:
-        build:
-            context: ../src
-            dockerfile: Postgres-11-Repmgr-4.0.Dockerfile
         environment:
             NODE_ID: 2
             NODE_NAME: node2
@@ -73,17 +54,8 @@ services:
             - 5441:5432
         volumes:
             - pgslave1:/var/lib/postgresql/data
-            - ./ssh:/tmp/.ssh/keys
-        networks:
-            cluster:
-                aliases:
-                    - pgslave1
 
-    # Add more slaves if required
     pgslave2:
-        build:
-            context: ../src
-            dockerfile: Postgres-11-Repmgr-4.0.Dockerfile
         environment:
             NODE_ID: 3
             NODE_NAME: node3
@@ -97,16 +69,8 @@ services:
             - 5442:5432
         volumes:
             - pgslave2:/var/lib/postgresql/data
-        networks:
-            cluster:
-                aliases:
-                    - pgslave2
-#>>> Branch 1
-#<<< Branch 2
+
     pgslave3:
-        build:
-            context: ../src
-            dockerfile: Postgres-11-Repmgr-4.0.Dockerfile
         environment:
             NODE_ID: 4
             NODE_NAME: node4
@@ -122,17 +86,8 @@ services:
             - 5443:5432
         volumes:
             - pgslave3:/var/lib/postgresql/data
-            - ./ssh:/tmp/.ssh/keys
-        networks:
-            cluster:
-                aliases:
-                    - pgslave3
 
-#>>> Branch 2
     backup:
-        build:
-            context: ../src
-            dockerfile: Barman-2.4-Postgres-11.Dockerfile
         environment:
             REPLICATION_USER: ${REPLICATION_USER}
             REPLICATION_PASSWORD: ${REPLICATION_PASSWORD}
@@ -144,15 +99,8 @@ services:
             BACKUP_SCHEDULE: "*/30 */5 * * *"
         volumes:
             - backup:/var/backups
-            - ./ssh:/tmp/.ssh/keys
-        networks:
-            cluster:
-                aliases:
-                    - backup
+
     pgpool:
-        build:
-            context: ../src
-            dockerfile: Pgpool-3.7-Postgres-11.Dockerfile
         environment:
             PCP_USER: ${PCP_USER}
             PCP_PASSWORD: ${PCP_PASSWORD}
@@ -178,14 +126,8 @@ services:
         ports:
             - 5430:5432
             - 9898:9898 # PCP
-        volumes:
-            - ./ssh:/tmp/.ssh/keys
-        networks:
-            cluster:
-                aliases:
-                    - pgpool
+
     pgadmin:
-        image: dpage/pgadmin4
         depends_on:
             - pgpool
         ports:
@@ -196,7 +138,3 @@ services:
             PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
         volumes:
             - pgadmin:/var/lib/pgadmin/data
-        networks:
-            cluster:
-                aliases:
-                    - pgadmin

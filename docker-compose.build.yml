@@ -1,0 +1,17 @@
+version: '3.6'
+
+services:
+    pgmaster:
+        build:
+            context: ./src
+            dockerfile: Postgres-11-Repmgr-4.0.Dockerfile
+
+    backup:
+        build:
+            context: ./src
+            dockerfile: Barman-2.4-Postgres-11.Dockerfile
+
+    pgpool:
+        build:
+            context: ./src
+            dockerfile: Pgpool-3.7-Postgres-11.Dockerfile

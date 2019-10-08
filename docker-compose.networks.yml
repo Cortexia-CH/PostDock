@@ -1,0 +1,48 @@
+version: '3.6'
+
+networks:
+    cluster:
+        driver: bridge
+
+services:
+    pgmaster:
+        networks:
+            cluster:
+                aliases:
+                    - pgmaster
+
+    pgslave1:
+        networks:
+            cluster:
+                aliases:
+                    - pgslave1
+
+    pgslave2:
+        networks:
+            cluster:
+                aliases:
+                    - pgslave2
+
+    pgslave3:
+        networks:
+            cluster:
+                aliases:
+                    - pgslave3
+
+    backup:
+        networks:
+            cluster:
+                aliases:
+                    - backup
+
+    pgpool:
+        networks:
+            cluster:
+                aliases:
+                    - pgpool
+
+    pgadmin:
+        networks:
+            cluster:
+                aliases:
+                    - pgadmin
