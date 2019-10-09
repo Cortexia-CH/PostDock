@@ -4,9 +4,6 @@ networks:
     cluster:
         driver: bridge
 
-volumes:
-    pgadmin:
-
 services:
     pgmaster:
         environment:
@@ -154,5 +151,3 @@ services:
             cluster:
                 aliases:
                     - pgadmin
-        volumes:
-            - pgadmin:/var/lib/pgadmin/data

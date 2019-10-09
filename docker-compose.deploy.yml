@@ -1,28 +1,6 @@
-version: '3.5'
-
-volumes:
-    pgmaster:
-    pgslave1:
-    pgslave2:
-    pgslave3:
-    backup:
+version: '3.6'
 
 services: 
-  pgmaster:
-    volumes:
-      - pgmaster:/var/lib/postgresql/data
-
-  pgslave1:
-    volumes:
-      - pgslave1:/var/lib/postgresql/data
-
-  pgslave2:
-    volumes:
-      - pgslave2:/var/lib/postgresql/data
-
-  pgslave3:
-    volumes:
-      - pgslave3:/var/lib/postgresql/data
 
   backup:
     deploy:
@@ -38,8 +16,6 @@ services:
         - traefik.redirectorservice.frontend.redirect.entryPoint=https
         # Traefik service that listens to HTTPS
         - traefik.webservice.frontend.entryPoints=https
-    volumes:
-      - backup:/var/backups
 
   pgpool:
     deploy:

@@ -28,7 +28,7 @@ endif
 
 check-keys:
 # create ssh keys if they do not exist yet
-ifeq ($(wildcard /tmp/.ssh/keys/id_rsa),)
+ifeq ($(wildcard src/ssh/keys/id_rsa),)
 	@echo "no ssh-keys found. Creating it..."
 	make ssh-keys
 endif
@@ -40,8 +40,9 @@ ifeq ($(wildcard .env),)
 endif
 
 ssh-keys:
-	mkdir -p .ssh/keys
-	cd .ssh/keys && ssh-keygen -t rsa -C "internal@pgpool.com" -f id_rsa
+	mkdir -p src/ssh/keys
+	rm src/ssh/keys/id_rsa* || true
+	cd src/ssh/keys && ssh-keygen -t rsa -C "internal@pgpool.com" -f id_rsa -N ''
 
 vars: check-env check-keys
 	@echo 'postgres'
@@ -86,14 +87,14 @@ config-local: check-env
 	docker-compose \
 		-f docker-compose.common.yml \
 		-f docker-compose.build.yml \
-		-f docker-compose.dev.yml \
+		-f docker-compose.volumes.yml \
 	config > docker-stack.yml
 
 pull: config-local
 	docker-compose -f docker-stack.yml pull $(services)
 	docker-compose -f docker-stack.yml build --pull $(services)
 
-build: config-local check-env check-keys
+build: config-local check-env ssh-keys
 	docker-compose -f docker-stack.yml build $(services)
 
 up: config-local check-env check-keys
@@ -124,6 +125,7 @@ push-qa: check-env login
 			-f docker-compose.common.yml \
 			-f docker-compose.images.yml \
 			-f docker-compose.networks.yml \
+			-f docker-compose.volumes.yml \
 			-f docker-compose.build.yml \
 		config > docker-stack.yml
 
@@ -141,6 +143,7 @@ deploy-qa: check-env
 			-f docker-compose.common.yml \
 			-f docker-compose.images.yml \
 			-f docker-compose.networks.yml \
+			-f docker-compose.volumes.yml \
 			-f docker-compose.deploy.yml \
 		config > docker-stack.yml
 

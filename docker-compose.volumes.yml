@@ -6,33 +6,29 @@ volumes:
     pgslave2:
     pgslave3:
     backup:
+    pgadmin:
 
 services:
     pgmaster:
         volumes:
             - pgmaster:/var/lib/postgresql/data
-            - ./.ssh/keys:/tmp/.ssh/keys
 
     pgslave1:
         volumes:
             - pgslave1:/var/lib/postgresql/data
-            - ./.ssh/keys:/tmp/.ssh/keys
 
     pgslave2:
         volumes:
             - pgslave2:/var/lib/postgresql/data
-            - ./.ssh/keys:/tmp/.ssh/keys
 
     pgslave3:
         volumes:
             - pgslave3:/var/lib/postgresql/data
-            - ./.ssh/keys:/tmp/.ssh/keys
 
     backup:
         volumes:
             - backup:/var/backups
-            - ./.ssh/keys:/tmp/.ssh/keys
 
-    pgpool:
+    pgadmin:
         volumes:
-            - ./.ssh/keys:/tmp/.ssh/keys
+            - pgadmin:/var/lib/pgadmin/data
