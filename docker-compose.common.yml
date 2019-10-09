@@ -82,7 +82,7 @@ services:
             SSH_ENABLE: 1
             BACKUP_SCHEDULE: "*/30 */5 * * *"
         ports:
-            - 2222:22
+            - "2222:22"
 
     pgpool:
         environment:
