@@ -10,44 +10,50 @@ volumes:
 
 services:
   pgpool:
-    placement:
-      constraints:
-        - node.role == manager
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
 
   pgmaster:
     volumes:
         - pgmaster:/var/lib/postgresql/data
-    placement:
-      constraints:
-        - node.labels.${STACK_NAME}.pgmaster == true
+    deploy:
+      placement:
+        constraints:
+          - node.labels.${STACK_NAME}.pgmaster == true
 
   pgslave1:
     volumes:
       - pgslave1:/var/lib/postgresql/data
-    placement:
-      constraints:
-        - node.labels.${STACK_NAME}.pgslave1 == true
+    deploy:
+      placement:
+        constraints:
+          - node.labels.${STACK_NAME}.pgslave1 == true
 
   pgslave2:
     volumes:
       - pgslave2:/var/lib/postgresql/data
-    placement:
-      constraints:
-        - node.labels.${STACK_NAME}.pgslave2 == true
+    deploy:
+      placement:
+        constraints:
+          - node.labels.${STACK_NAME}.pgslave2 == true
 
   pgslave3:
     volumes:
       - pgslave3:/var/lib/postgresql/data
-    placement:
-      constraints:
-        - node.labels.${STACK_NAME}.pgslave3 == true
+    deploy:
+      placement:
+        constraints:
+          - node.labels.${STACK_NAME}.pgslave3 == true
 
   pgbackup:
     volumes:
       - pgbackup:/var/backups
-    placement:
-      constraints:
-        - node.role == manager
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
 
   pgadmin:
     volumes:

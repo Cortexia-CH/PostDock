@@ -195,22 +195,22 @@ pgpool-write-mode: check-env
 
 barman-list-server: check-env
 	@echo "\r\n--- barman-list-server ---"
-	docker-compose -f docker-stack.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec pgbackup bash -c \
 		'barman list-server'
 
 barman-check-all: check-env
 	@echo "\r\n--- barman-check-all ---"
-	docker-compose -f docker-stack.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec pgbackup bash -c \
 		'barman check all'
 
 barman-backup-all: check-env
 	@echo "\r\n--- barman-backup-all ---"
-	docker-compose -f docker-stack.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec pgbackup bash -c \
 		'barman backup all'
 
 barman-diagnose: check-env
 	@echo "\r\n--- barman-diagnose ---"
-	docker-compose -f docker-stack.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec pgbackup bash -c \
 		'barman diagnose'
 
 # Barman > server
@@ -220,27 +220,27 @@ barman: barman-show barman-status barman-check barman-list-backup
 
 barman-check: check-env
 	@echo "\r\n--- barman-check ---"
-	docker-compose -f docker-stack.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec pgbackup bash -c \
 		'barman check `barman list-server --minimal`'
 
 barman-status: check-env
 	@echo "\r\n--- barman-status ---"
-	docker-compose -f docker-stack.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec pgbackup bash -c \
 		'barman status `barman list-server --minimal`'
 
 barman-replication-status: check-env
 	@echo "\r\n--- barman-replication-status ---"
-	docker-compose -f docker-stack.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec pgbackup bash -c \
 		'barman replication-status `barman list-server --minimal`'
 
 barman-show: check-env
 	@echo "\r\n--- barman-show ---"
-	docker-compose -f docker-stack.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec pgbackup bash -c \
 		'barman show-server `barman list-server --minimal`'
 
 barman-list-backup: check-env
 	@echo "\r\n--- barman-list-backup ---"
-	docker-compose -f docker-stack.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec pgbackup bash -c \
 		'barman list-backup `barman list-server --minimal`'
 
 
@@ -249,20 +249,20 @@ barman-list-backup: check-env
 
 barman-backup: check-env
 	@echo "\r\n--- barman-backup ---"
-	docker-compose -f docker-stack.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec pgbackup bash -c \
 		'barman backup `barman list-server --minimal`'
 
 barman-check-backup: check-env
 	@echo "\r\n--- barman-check-backup ---"
-	docker-compose -f docker-stack.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec pgbackup bash -c \
 		'barman check-backup `barman list-server --minimal` $(BACKUP_ID)'
 
 barman-show-backup: check-env
 	@echo "\r\n--- barman-show-backup ---"
-	docker-compose -f docker-stack.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec pgbackup bash -c \
 		'barman show-backup `barman list-server --minimal` $(BACKUP_ID)'
 
 barman-delete-backup: check-env
 	@echo "\r\n--- barman-delete-backup ---"
-	docker-compose -f docker-stack.yml exec backup bash -c \
+	docker-compose -f docker-stack.yml exec pgbackup bash -c \
 		'barman check-backup `barman list-server --minimal` $(BACKUP_ID)'
