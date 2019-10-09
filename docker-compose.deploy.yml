@@ -8,7 +8,7 @@ services:
         - traefik.frontend.rule=Host:pgbackup.${SUBDOMAIN}.${DOMAIN}
         - traefik.frontend.passHostHeader=true
         - traefik.enable=true
-        - traefik.port=80
+        - traefik.port=22
         - traefik.tags=${TRAEFIK_PUBLIC_TAG}
         - traefik.docker.network=${TRAEFIK_PUBLIC_NETWORK}
         # Traefik service that listens to HTTP
@@ -38,7 +38,7 @@ services:
           - traefik.frontend.rule=Host:pgadmin.${SUBDOMAIN}.${DOMAIN}
           - traefik.frontend.passHostHeader=true
           - traefik.enable=true
-          - traefik.port=80
+          - traefik.port=5050
           - traefik.tags=${TRAEFIK_PUBLIC_TAG}
           - traefik.docker.network=${TRAEFIK_PUBLIC_NETWORK}
           # Traefik service that listens to HTTP
