@@ -5,7 +5,7 @@ services:
   pgbackup:
     deploy:
       labels:
-        - traefik.frontend.rule=Host:backup.${SUBDOMAIN}.${DOMAIN}
+        - traefik.frontend.rule=Host:pgbackup.${SUBDOMAIN}.${DOMAIN}
         - traefik.frontend.passHostHeader=true
         - traefik.enable=true
         - traefik.port=80

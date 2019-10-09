@@ -104,7 +104,7 @@ services:
         networks:
             cluster:
                 aliases:
-                    - backup
+                    - pgbackup
 
     pgpool:
         environment:
