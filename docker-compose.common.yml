@@ -5,11 +5,6 @@ networks:
         driver: bridge
 
 volumes:
-    pgmaster:
-    pgslave1:
-    pgslave2:
-    pgslave3:
-    backup:
     pgadmin:
 
 services:
@@ -40,8 +35,6 @@ services:
             REPLICATION_PASSWORD: replication_pass # default is replication_pass
         ports:
             - 5422:5432
-        volumes:
-            - pgmaster:/var/lib/postgresql/data
         networks:
             cluster:
                 aliases:
@@ -60,8 +53,6 @@ services:
             CONFIGS: "max_replication_slots:10" #some overrides
         ports:
             - 5441:5432
-        volumes:
-            - pgslave1:/var/lib/postgresql/data
         networks:
             cluster:
                 aliases:
@@ -79,8 +70,6 @@ services:
             CONFIGS: "listen_addresses:'*'"
         ports:
             - 5442:5432
-        volumes:
-            - pgslave2:/var/lib/postgresql/data
         networks:
             cluster:
                 aliases:
@@ -100,8 +89,6 @@ services:
             CONFIGS: "listen_addresses:'*'"
         ports:
             - 5443:5432
-        volumes:
-            - pgslave3:/var/lib/postgresql/data
         networks:
             cluster:
                 aliases:
@@ -117,8 +104,6 @@ services:
             POSTGRES_DB: ${POSTGRES_DB}
             SSH_ENABLE: 1
             BACKUP_SCHEDULE: "*/30 */5 * * *"
-        volumes:
-            - backup:/var/backups
         networks:
             cluster:
                 aliases:
@@ -165,9 +150,9 @@ services:
             PGADMIN_LISTEN_PORT: ${PGADMIN_LISTEN_PORT}
             PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
             PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-        volumes:
-            - pgadmin:/var/lib/pgadmin/data
         networks:
             cluster:
                 aliases:
                     - pgadmin
+        volumes:
+            - pgadmin:/var/lib/pgadmin/data

@@ -1,22 +1,38 @@
 version: '3.6'
 
+volumes:
+    pgmaster:
+    pgslave1:
+    pgslave2:
+    pgslave3:
+    backup:
+
 services:
     pgmaster:
         volumes:
-            - ./ssh/:/tmp/.ssh/keys
+            - pgmaster:/var/lib/postgresql/data
+            - ./.ssh/keys:/tmp/.ssh/keys
 
     pgslave1:
         volumes:
-            - ./ssh:/tmp/.ssh/keys
+            - pgslave1:/var/lib/postgresql/data
+            - ./.ssh/keys:/tmp/.ssh/keys
+
+    pgslave2:
+        volumes:
+            - pgslave2:/var/lib/postgresql/data
+            - ./.ssh/keys:/tmp/.ssh/keys
 
     pgslave3:
         volumes:
-            - ./ssh:/tmp/.ssh/keys
+            - pgslave3:/var/lib/postgresql/data
+            - ./.ssh/keys:/tmp/.ssh/keys
 
     backup:
         volumes:
-            - ./ssh:/tmp/.ssh/keys
+            - backup:/var/backups
+            - ./.ssh/keys:/tmp/.ssh/keys
 
     pgpool:
         volumes:
-            - ./ssh:/tmp/.ssh/keys
+            - ./.ssh/keys:/tmp/.ssh/keys

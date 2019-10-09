@@ -40,8 +40,8 @@ ifeq ($(wildcard .env),)
 endif
 
 ssh-keys:
-	mkdir -p /tmp/.ssh/keys
-	cd /tmp/.ssh/keys && ssh-keygen -t rsa -C "internal@pgpool.com" -f /tmp/.ssh/keys/id_rsa
+	mkdir -p .ssh/keys
+	cd .ssh/keys && ssh-keygen -t rsa -C "internal@pgpool.com" -f id_rsa
 
 vars: check-env check-keys
 	@echo 'postgres'
@@ -96,7 +96,7 @@ pull: config-local
 build: config-local check-env check-keys
 	docker-compose -f docker-stack.yml build $(services)
 
-up: config-local
+up: config-local check-env check-keys
 	docker-compose -f docker-stack.yml up -d $(services)
 
 down:
@@ -153,14 +153,17 @@ deploy-qa: check-env
 pg: pg-live pg-master
 
 pg-map: check-env
+	@echo "\r\n--- pg-map ---"
 	docker-compose -f docker-stack.yml exec pgmaster bash -c \
 		'gosu postgres psql $(REPLICATION_DB) -c "SELECT * FROM $$(get_repmgr_schema).$(REPMGR_NODES_TABLE)"'
 
 pg-live: check-env
+	@echo "\r\n--- pg-live ---"
 	docker-compose -f docker-stack.yml exec pgmaster bash -c \
 		'gosu postgres repmgr cluster show'
 
 pg-master: check-env
+	@echo "\r\n--- pg-master ---"
 	docker-compose -f docker-stack.yml exec pgmaster bash -c \
 		'/usr/local/bin/cluster/healthcheck/is_major_master.sh'
 
@@ -170,14 +173,17 @@ pg-master: check-env
 pgpool: pgpool-status pgpool-enough pgpool-write-mode
 
 pgpool-status: check-env
+	@echo "\r\n--- pgpool-status ---"
 	docker-compose -f docker-stack.yml exec pgpool bash -c \
 		'PGPASSWORD=$(CHECK_PASSWORD) psql -h pgpool -U $(CHECK_USER) template1 -c "show pool_nodes"'
 
 pgpool-enough: check-env
+	@echo "\r\n--- pgpool-enough ---"
 	docker-compose -f docker-stack.yml exec pgpool bash -c \
 		'/usr/local/bin/pgpool/has_enough_backends.sh'
 
 pgpool-write-mode: check-env
+	@echo "\r\n--- pgpool-write-mode ---"
 	docker-compose -f docker-stack.yml exec pgpool bash -c \
 		'/usr/local/bin/pgpool/has_write_node.sh'
 
@@ -185,18 +191,22 @@ pgpool-write-mode: check-env
 # Barman
 
 barman-list-server: check-env
+	@echo "\r\n--- barman-list-server ---"
 	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman list-server'
 
 barman-check-all: check-env
+	@echo "\r\n--- barman-check-all ---"
 	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman check all'
 
 barman-backup-all: check-env
+	@echo "\r\n--- barman-backup-all ---"
 	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman backup all'
 
 barman-diagnose: check-env
+	@echo "\r\n--- barman-diagnose ---"
 	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman diagnose'
 
@@ -206,22 +216,27 @@ barman-diagnose: check-env
 barman: barman-show barman-status barman-check barman-list-backup
 
 barman-check: check-env
+	@echo "\r\n--- barman-check ---"
 	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman check `barman list-server --minimal`'
 
 barman-status: check-env
+	@echo "\r\n--- barman-status ---"
 	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman status `barman list-server --minimal`'
 
 barman-replication-status: check-env
+	@echo "\r\n--- barman-replication-status ---"
 	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman replication-status `barman list-server --minimal`'
 
 barman-show: check-env
+	@echo "\r\n--- barman-show ---"
 	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman show-server `barman list-server --minimal`'
 
 barman-list-backup: check-env
+	@echo "\r\n--- barman-list-backup ---"
 	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman list-backup `barman list-server --minimal`'
 
@@ -230,17 +245,21 @@ barman-list-backup: check-env
 # (All executed on `barman list-server --minimal`, i.e. pgmaster)
 
 barman-backup: check-env
+	@echo "\r\n--- barman-backup ---"
 	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman backup `barman list-server --minimal`'
 
 barman-check-backup: check-env
+	@echo "\r\n--- barman-check-backup ---"
 	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman check-backup `barman list-server --minimal` $(BACKUP_ID)'
 
 barman-show-backup: check-env
+	@echo "\r\n--- barman-show-backup ---"
 	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman show-backup `barman list-server --minimal` $(BACKUP_ID)'
 
 barman-delete-backup: check-env
+	@echo "\r\n--- barman-delete-backup ---"
 	docker-compose -f docker-stack.yml exec backup bash -c \
 		'barman check-backup `barman list-server --minimal` $(BACKUP_ID)'

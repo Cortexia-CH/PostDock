@@ -14,7 +14,7 @@ services:
         image: cortexia/pginstance
 
     backup:
-        image: cortexia/backup
+        image: cortexia/pgbackup
 
     pgpool:
         image: cortexia/pgpool
