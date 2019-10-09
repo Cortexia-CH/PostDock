@@ -87,7 +87,7 @@ config-local: check-env
 	docker-compose \
 		-f docker-compose.common.yml \
 		-f docker-compose.build.yml \
-		-f docker-compose.volumes.yml \
+		-f docker-compose.dev.yml \
 	config > docker-stack.yml
 
 pull: config-local
@@ -125,7 +125,7 @@ push-qa: check-env login
 			-f docker-compose.common.yml \
 			-f docker-compose.images.yml \
 			-f docker-compose.networks.yml \
-			-f docker-compose.volumes.yml \
+			-f docker-compose.volumes-placement.yml \
 			-f docker-compose.build.yml \
 		config > docker-stack.yml
 
@@ -143,7 +143,7 @@ deploy-qa: check-env
 			-f docker-compose.common.yml \
 			-f docker-compose.images.yml \
 			-f docker-compose.networks.yml \
-			-f docker-compose.volumes.yml \
+			-f docker-compose.volumes-placement.yml \
 			-f docker-compose.deploy.yml \
 		config > docker-stack.yml
 

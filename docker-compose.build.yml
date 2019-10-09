@@ -21,7 +21,7 @@ services:
             context: ./src
             dockerfile: Postgres-11-Repmgr-4.0.Dockerfile
 
-    backup:
+    pgbackup:
         build:
             context: ./src
             dockerfile: Barman-2.4-Postgres-11.Dockerfile

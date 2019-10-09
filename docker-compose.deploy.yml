@@ -2,7 +2,7 @@ version: '3.6'
 
 services: 
 
-  backup:
+  pgbackup:
     deploy:
       labels:
         - traefik.frontend.rule=Host:backup.${SUBDOMAIN}.${DOMAIN}

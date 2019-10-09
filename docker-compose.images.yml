@@ -13,7 +13,7 @@ services:
     pgslave3:
         image: cortexia/pginstance
 
-    backup:
+    pgbackup:
         image: cortexia/pgbackup
 
     pgpool:

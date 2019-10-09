@@ -91,7 +91,7 @@ services:
                 aliases:
                     - pgslave3
 
-    backup:
+    pgbackup:
         environment:
             REPLICATION_USER: ${REPLICATION_USER}
             REPLICATION_PASSWORD: ${REPLICATION_PASSWORD}

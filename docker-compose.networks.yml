@@ -21,7 +21,7 @@ services:
         networks:
             - ${TRAEFIK_PUBLIC_NETWORK}
 
-    backup:
+    pgbackup:
         networks:
             - ${TRAEFIK_PUBLIC_NETWORK}
 
