@@ -35,7 +35,7 @@ endif
 
 init:
 ifeq ($(wildcard .env),)
-	cp .env.sample .env
+	cp .sample.env .env
 	make ssh-keys
 endif
 
