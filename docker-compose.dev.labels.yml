@@ -1,0 +1,37 @@
+version: '3.6'
+
+networks:
+  prod-stack_traefik-public:
+    external: true
+
+services: 
+
+  pgbackup:
+    networks:
+      - ${TRAEFIK_PUBLIC_NETWORK}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=${TRAEFIK_PUBLIC_NETWORK}"
+      - "traefik.tcp.routers.pgbackup.entrypoints=ssh"
+      - "traefik.tcp.routers.pgbackup.rule=HostSNI(`*`)"
+
+  pgpool:
+    networks:
+      - ${TRAEFIK_PUBLIC_NETWORK}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=${TRAEFIK_PUBLIC_NETWORK}"
+      - "traefik.tcp.routers.pgpool.entrypoints=pg"
+      - "traefik.tcp.routers.pgpool.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.pgpool.service=pgpool-postdock"
+      - "traefik.tcp.services.pgpool-postdock.loadbalancer.server.port=5432"
+
+  pgadmin:
+    networks:
+      - ${TRAEFIK_PUBLIC_NETWORK}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=${TRAEFIK_PUBLIC_NETWORK}"
+      - "traefik.http.routers.pgadmin.entrypoints=websecure"
+      - "traefik.http.routers.pgadmin.rule=Host(`pgadmin.${SUBDOMAIN}.${DOMAIN}`)"
+      - "traefik.http.routers.pgadmin.tls.certresolver=cloudflare"

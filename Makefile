@@ -45,6 +45,14 @@ ssh-keys:
 	cd src/ssh/keys && ssh-keygen -t rsa -C "internal@pgpool.com" -f id_rsa -N ''
 
 vars: check-env check-keys
+	@echo 'deployment'
+	@echo '  DOCKER_TAG: $(DOCKER_TAG)'
+	@echo '  SUBDOMAIN: $(SUBDOMAIN)'
+	@echo '  DOMAIN: $(DOMAIN)'
+	@echo '  STACK_NAME: $(STACK_NAME)'
+	@echo '  TRAEFIK_PUBLIC_NETWORK: $(TRAEFIK_PUBLIC_NETWORK)'
+	@echo '  TRAEFIK_PUBLIC_TAG: $(TRAEFIK_PUBLIC_TAG)'
+	@echo ''
 	@echo 'postgres'
 	@echo '  POSTGRES_PASSWORD: $(POSTGRES_PASSWORD)'
 	@echo '  POSTGRES_USER: $(POSTGRES_USER)'
@@ -58,7 +66,6 @@ vars: check-env check-keys
 	@echo '  CHECK_PASSWORD: $(CHECK_PASSWORD)'
 	@echo ''
 	@echo 'pgadmin'
-	@echo '  PGADMIN_LISTEN_PORT: $(PGADMIN_LISTEN_PORT)'
 	@echo '  PGADMIN_DEFAULT_EMAIL: $(PGADMIN_DEFAULT_EMAIL)'
 	@echo '  PGADMIN_DEFAULT_PASSWORD: $(PGADMIN_DEFAULT_PASSWORD)'
 	@echo ''
@@ -81,12 +88,13 @@ ps:
 	docker ps --format 'table {{.Image}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}'
 
 config-local: check-env
-	DOCKER_TAG=latest \
-	SUBDOMAIN=pgcluster \
-	DOMAIN=local \
+	DOCKER_TAG=$(DOCKER_TAG) \
+	SUBDOMAIN=$(SUBDOMAIN) \
+	DOMAIN=$(DOMAIN) \
 	docker-compose \
 		-f docker-compose.common.yml \
 		-f docker-compose.build.yml \
+		-f docker-compose.dev.labels.yml \
 		-f docker-compose.dev.yml \
 	config > docker-stack.yml
 
@@ -94,7 +102,7 @@ pull: config-local
 	docker-compose -f docker-stack.yml pull $(services)
 	docker-compose -f docker-stack.yml build --pull $(services)
 
-build: config-local check-env ssh-keys
+build: config-local check-env check-keys
 	docker-compose -f docker-stack.yml build $(services)
 
 up: config-local check-env check-keys
@@ -112,7 +120,7 @@ logs: up
 
 ## Release
 
-push-qa: check-env login
+push-qa: check-env login ssh-keys
 	# update tags
 	git tag -f qa
 	git push --tags --force
