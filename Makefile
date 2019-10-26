@@ -85,6 +85,7 @@ login:
 	docker login
 
 ps:
+	# docker ps --format 'table {{.Image}}\t{{.Status}}\t{{.Names}}'
 	docker ps --format 'table {{.Image}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}'
 
 config-local: check-env
@@ -93,12 +94,12 @@ config-local: check-env
 	DOMAIN=$(DOMAIN) \
 	docker-compose \
 		-f docker-compose.common.yml \
-		-f docker-compose.build.yml \
 		-f docker-compose.dev.labels.yml \
 		-f docker-compose.dev.yml \
+		-f docker-compose.build.yml \
 	config > docker-stack.yml
 
-pull: config-local
+pull: config-local ssh-keys
 	docker-compose -f docker-stack.yml pull $(services)
 	docker-compose -f docker-stack.yml build --pull $(services)
 
