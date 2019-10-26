@@ -13,9 +13,9 @@ services:
         networks:
             - ${TRAEFIK_PUBLIC_NETWORK}
 
-    pgslave2:
-        networks:
-            - ${TRAEFIK_PUBLIC_NETWORK}
+    # pgslave2:
+    #     networks:
+    #         - ${TRAEFIK_PUBLIC_NETWORK}
 
     pgslave3:
         networks:

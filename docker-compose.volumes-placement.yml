@@ -31,13 +31,13 @@ services:
         constraints:
           - node.labels.${STACK_NAME}.pgslave1 == true
 
-  pgslave2:
-    volumes:
-      - pgslave2:/var/lib/postgresql/data
-    deploy:
-      placement:
-        constraints:
-          - node.labels.${STACK_NAME}.pgslave2 == true
+  # pgslave2:
+  #   volumes:
+  #     - pgslave2:/var/lib/postgresql/data
+  #   deploy:
+  #     placement:
+  #       constraints:
+  #         - node.labels.${STACK_NAME}.pgslave2 == true
 
   pgslave3:
     volumes:

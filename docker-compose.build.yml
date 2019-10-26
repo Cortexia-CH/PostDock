@@ -5,28 +5,67 @@ services:
         build:
             context: ./src
             dockerfile: Postgres-11-Repmgr-4.0.Dockerfile
+            args:
+                - "postgres_db=${POSTGRES_DB}"
+                - "postgres_password=${POSTGRES_PASSWORD}"
+                - "postgres_user=${POSTGRES_USER}"
+                - "replication_db=${REPLICATION_DB}"
+                - "replication_password=${REPLICATION_PASSWORD}"
+                - "replication_user=${REPLICATION_USER}"
 
     pgslave1:
         build:
             context: ./src
             dockerfile: Postgres-11-Repmgr-4.0.Dockerfile
+            args:
+                - "postgres_db=${POSTGRES_DB}"
+                - "postgres_password=${POSTGRES_PASSWORD}"
+                - "postgres_user=${POSTGRES_USER}"
+                - "replication_db=${REPLICATION_DB}"
+                - "replication_password=${REPLICATION_PASSWORD}"
+                - "replication_user=${REPLICATION_USER}"
 
-    pgslave2:
-        build:
-            context: ./src
-            dockerfile: Postgres-11-Repmgr-4.0.Dockerfile
+    # pgslave2:
+    #     build:
+    #         context: ./src
+    #         dockerfile: Postgres-11-Repmgr-4.0.Dockerfile
+    #         args:
+    #             - "postgres_db=${POSTGRES_DB}"
+    #             - "postgres_password=${POSTGRES_PASSWORD}"
+    #             - "postgres_user=${POSTGRES_USER}"
+    #             - "replication_db=${REPLICATION_DB}"
+    #             - "replication_password=${REPLICATION_PASSWORD}"
+    #             - "replication_user=${REPLICATION_USER}"
 
     pgslave3:
         build:
             context: ./src
             dockerfile: Postgres-11-Repmgr-4.0.Dockerfile
+            args:
+                - "postgres_db=${POSTGRES_DB}"
+                - "postgres_password=${POSTGRES_PASSWORD}"
+                - "postgres_user=${POSTGRES_USER}"
+                - "replication_db=${REPLICATION_DB}"
+                - "replication_password=${REPLICATION_PASSWORD}"
+                - "replication_user=${REPLICATION_USER}"
 
     pgbackup:
         build:
             context: ./src
             dockerfile: Barman-2.4-Postgres-11.Dockerfile
+            args:
+                - "postgres_db=${POSTGRES_DB}"
+                - "postgres_password=${POSTGRES_PASSWORD}"
+                - "postgres_user=${POSTGRES_USER}"
+                - "replication_host=${REPLICATION_HOST}"
+                - "replication_db=${REPLICATION_DB}"
+                - "replication_password=${REPLICATION_PASSWORD}"
+                - "replication_user=${REPLICATION_USER}"
 
     pgpool:
         build:
             context: ./src
             dockerfile: Pgpool-3.7-Postgres-11.Dockerfile
+            args:
+                - "postgres_db=${POSTGRES_DB}"
+                - "postgres_password=${POSTGRES_PASSWORD}"

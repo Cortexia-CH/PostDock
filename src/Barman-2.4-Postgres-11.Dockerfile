@@ -31,8 +31,6 @@ RUN groupadd -r postgres --gid=999 && useradd -r -g postgres -d /home/postgres -
 
 ENV UPSTREAM_NAME pg_cluster
 ENV UPSTREAM_CONFIG_FILE /etc/barman.d/upstream.conf 
-ENV REPLICATION_USER replication_user
-ENV REPLICATION_PASSWORD replication_pass
 ENV REPLICATION_PORT 5432
 ENV POSTGRES_CONNECTION_TIMEOUT 20
 ENV REPLICATION_SLOT_NAME barman_the_backupper
@@ -44,10 +42,21 @@ ENV BACKUP_RETENTION_DAYS "30"
 ENV BACKUP_DIR /var/backups
 
 # REQUIRED ENV VARS:
-# ENV REPLICATION_HOST localhost
-# ENV POSTGRES_USER postgres
-# ENV POSTGRES_PASSWORD password
-# ENV POSTGRES_DB monkey_db
+ARG postgres_user=monkey_user
+ARG postgres_password=monkey_pass
+ARG postgres_db=monkey_db
+ARG replication_host=localhost
+ARG replication_user=replication_user
+ARG replication_password=replication_pass
+ARG replication_db=replication_db
+
+ENV POSTGRES_USER $postgres_user
+ENV POSTGRES_PASSWORD $postgres_password
+ENV POSTGRES_DB $postgres_db
+ENV REPLICATION_HOST $replication_host
+ENV REPLICATION_USER $replication_user
+ENV REPLICATION_PASSWORD $replication_password
+ENV REPLICATION_DB $replication_db
 
 EXPOSE 22
 

@@ -38,8 +38,13 @@ COPY ./pgpool/configs /var/pgpool_configs
 
 RUN chmod +x -R /usr/local/bin/pgpool
 
-ENV CHECK_USER replication_user
-ENV CHECK_PASSWORD replication_pass
+# REQUIRED ENV VARS:
+ARG postgres_user=monkey_user
+ARG postgres_password=monkey_pass
+
+ENV CHECK_USER $postgres_user
+ENV CHECK_PASSWORD $postgres_password
+
 ENV CHECK_PGCONNECT_TIMEOUT 10
 ENV WAIT_BACKEND_TIMEOUT 120
 ENV REQUIRE_MIN_BACKENDS 0

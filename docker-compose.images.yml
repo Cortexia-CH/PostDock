@@ -7,8 +7,8 @@ services:
     pgslave1:
         image: cortexia/pginstance
 
-    pgslave2:
-        image: cortexia/pginstance
+    # pgslave2:
+    #     image: cortexia/pginstance
 
     pgslave3:
         image: cortexia/pginstance
