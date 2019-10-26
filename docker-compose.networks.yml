@@ -1,26 +1,26 @@
 version: '3.7'
 
 networks:
-  default:
-    external: true
-    name: ${POSTGRES_NETWORK}
-
   traefik:
     external: true
     name: ${TRAEFIK_PUBLIC_NETWORK}
 
+  default:
+    external: true
+    name: ${POSTGRES_NETWORK}
+
 services:
   pgbackup:
     networks:
-      - default
       - traefik
+      - default
 
   pgpool:
     networks:
-      - default
       - traefik
+      - default
 
   pgadmin:
     networks:
-      - default
       - traefik
+      - default

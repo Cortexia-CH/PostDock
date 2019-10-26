@@ -1,9 +1,5 @@
 version: '3.7'
 
-networks:
-    cluster:
-        driver: bridge
-
 volumes:
   pgmaster:
   pgslave1:
@@ -13,51 +9,25 @@ volumes:
   pgadmin:
 
 services:
-  pgpool:
-    networks:
-      cluster:
-        aliases:
-           - pgpool
-
   pgmaster:
     volumes:
         - pgmaster:/var/lib/postgresql/data
-    networks:
-      cluster:
-        aliases:
-           - pgmaster
 
   pgslave1:
     volumes:
       - pgslave1:/var/lib/postgresql/data
-    networks:
-      cluster:
-        aliases:
-           - pgslave1
 
   # pgslave2:
   #   volumes:
   #     - pgslave2:/var/lib/postgresql/data
-  #   networks:
-  #     cluster:
-  #       aliases:
-  #          - pgslave2
 
   pgslave3:
     volumes:
       - pgslave3:/var/lib/postgresql/data
-    networks:
-      cluster:
-        aliases:
-           - pgslave3
 
   pgbackup:
     volumes:
       - pgbackup:/var/backups
-    networks:
-      cluster:
-        aliases:
-           - pgbackup
 
   pgadmin:
     volumes:
