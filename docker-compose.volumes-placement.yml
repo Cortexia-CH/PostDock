@@ -3,7 +3,7 @@ version: '3.7'
 volumes:
   pgmaster:
   pgslave1:
-  pgslave2:
+  # pgslave2:
   pgslave3:
   pgbackup:
   pgadmin:

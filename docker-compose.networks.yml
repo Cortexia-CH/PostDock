@@ -1,34 +1,26 @@
 version: '3.7'
 
 networks:
-  traefik-public:
+  default:
     external: true
+    name: ${POSTGRES_NETWORK}
+
+  traefik:
+    external: true
+    name: ${TRAEFIK_PUBLIC_NETWORK}
 
 services:
-    pgmaster:
-        networks:
-            - ${TRAEFIK_PUBLIC_NETWORK}
+  pgbackup:
+    networks:
+      - default
+      - traefik
 
-    pgslave1:
-        networks:
-            - ${TRAEFIK_PUBLIC_NETWORK}
+  pgpool:
+    networks:
+      - default
+      - traefik
 
-    # pgslave2:
-    #     networks:
-    #         - ${TRAEFIK_PUBLIC_NETWORK}
-
-    pgslave3:
-        networks:
-            - ${TRAEFIK_PUBLIC_NETWORK}
-
-    pgbackup:
-        networks:
-            - ${TRAEFIK_PUBLIC_NETWORK}
-
-    pgpool:
-        networks:
-            - ${TRAEFIK_PUBLIC_NETWORK}
-
-    pgadmin:
-        networks:
-            - ${TRAEFIK_PUBLIC_NETWORK}
+  pgadmin:
+    networks:
+      - default
+      - traefik

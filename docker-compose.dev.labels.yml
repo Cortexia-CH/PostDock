@@ -1,14 +1,8 @@
 version: '3.7'
 
-networks:
-  prod-stack_traefik-public:
-    external: true
-
 services: 
 
   pgbackup:
-    networks:
-      - ${TRAEFIK_PUBLIC_NETWORK}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=${TRAEFIK_PUBLIC_NETWORK}"
@@ -16,8 +10,6 @@ services:
       - "traefik.tcp.routers.pgbackup.rule=HostSNI(`*`)"
 
   pgpool:
-    networks:
-      - ${TRAEFIK_PUBLIC_NETWORK}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=${TRAEFIK_PUBLIC_NETWORK}"
@@ -27,8 +19,6 @@ services:
       - "traefik.tcp.services.pgpool-postdock.loadbalancer.server.port=5432"
 
   pgadmin:
-    networks:
-      - ${TRAEFIK_PUBLIC_NETWORK}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=${TRAEFIK_PUBLIC_NETWORK}"

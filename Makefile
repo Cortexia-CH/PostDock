@@ -39,11 +39,6 @@ ifeq ($(wildcard .env),)
 	make ssh-keys
 endif
 
-ssh-keys:
-	mkdir -p src/ssh/keys
-	rm src/ssh/keys/id_rsa* || true
-	cd src/ssh/keys && ssh-keygen -t rsa -C "internal@pgpool.com" -f id_rsa -N ''
-
 vars: check-env check-keys
 	@echo 'deployment'
 	@echo '  DOCKER_TAG: $(DOCKER_TAG)'
@@ -79,6 +74,11 @@ vars: check-env check-keys
 
 status: pg-master pgpool-enough barman-check barman-list-backup
 
+ssh-keys:
+	mkdir -p src/ssh/keys
+	rm src/ssh/keys/id_rsa* || true
+	cd src/ssh/keys && ssh-keygen -t rsa -C "internal@pgpool.com" -f id_rsa -N ''
+
 # docker management
 
 login:
@@ -94,12 +94,14 @@ config-local: check-env
 	DOMAIN=$(DOMAIN) \
 	docker-compose \
 		-f docker-compose.common.yml \
+		-f docker-compose.networks.yml \
 		-f docker-compose.dev.labels.yml \
 		-f docker-compose.dev.yml \
 		-f docker-compose.build.yml \
 	config > docker-stack.yml
 
-pull: config-local ssh-keys
+pull: config-local check-keys
+	docker network create $(POSTGRES_NETWORK)
 	docker-compose -f docker-stack.yml pull $(services)
 	docker-compose -f docker-stack.yml build --pull $(services)
 
