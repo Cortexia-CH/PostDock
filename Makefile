@@ -33,11 +33,8 @@ ifeq ($(wildcard src/ssh/keys/id_rsa),)
 	make ssh-keys
 endif
 
-init:
-ifeq ($(wildcard .env),)
-	cp .sample.env .env
-	make ssh-keys
-endif
+init: check-env
+	docker network create --overlay ${POSTGRES_NETWORK}
 
 vars: check-env check-keys
 	@echo 'deployment'
@@ -45,6 +42,7 @@ vars: check-env check-keys
 	@echo '  SUBDOMAIN: $(SUBDOMAIN)'
 	@echo '  DOMAIN: $(DOMAIN)'
 	@echo '  STACK_NAME: $(STACK_NAME)'
+	@echo '  POSTGRES_NETWORK: $(POSTGRES_NETWORK)'
 	@echo '  TRAEFIK_PUBLIC_NETWORK: $(TRAEFIK_PUBLIC_NETWORK)'
 	@echo ''
 	@echo 'postgres'
