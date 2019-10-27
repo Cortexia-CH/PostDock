@@ -46,7 +46,6 @@ vars: check-env check-keys
 	@echo '  DOMAIN: $(DOMAIN)'
 	@echo '  STACK_NAME: $(STACK_NAME)'
 	@echo '  TRAEFIK_PUBLIC_NETWORK: $(TRAEFIK_PUBLIC_NETWORK)'
-	@echo '  TRAEFIK_PUBLIC_TAG: $(TRAEFIK_PUBLIC_TAG)'
 	@echo ''
 	@echo 'postgres'
 	@echo '  POSTGRES_PASSWORD: $(POSTGRES_PASSWORD)'
@@ -149,7 +148,6 @@ deploy-qa: check-env
 		SUBDOMAIN=pgcluster-qa \
 		DOMAIN=cortexia.io \
 		STACK_NAME=pgcluster-qa \
-		TRAEFIK_PUBLIC_TAG=${TRAEFIK_PUBLIC_TAG} \
 		docker-compose \
 			-f docker-compose.common.yml \
 			-f docker-compose.images.yml \

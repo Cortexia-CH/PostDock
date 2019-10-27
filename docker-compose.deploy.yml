@@ -5,44 +5,27 @@ services:
   pgbackup:
     deploy:
       labels:
-        - traefik.frontend.rule=Host:pgbackup.${SUBDOMAIN}.${DOMAIN}
-        - traefik.frontend.passHostHeader=true
-        - traefik.enable=true
-        - traefik.port=2222
-        - traefik.tags=${TRAEFIK_PUBLIC_TAG}
-        - traefik.docker.network=${TRAEFIK_PUBLIC_NETWORK}
-        # Traefik service that listens to HTTP
-        - traefik.redirectorservice.frontend.entryPoints=http
-        - traefik.redirectorservice.frontend.redirect.entryPoint=https
-        # Traefik service that listens to HTTPS
-        - traefik.webservice.frontend.entryPoints=https
+        - "traefik.enable=true"
+        - "traefik.docker.network=${TRAEFIK_PUBLIC_NETWORK}"
+        - "traefik.tcp.routers.pgbackup.entrypoints=ssh"
+        - "traefik.tcp.routers.pgbackup.rule=HostSNI(`*`)"
 
   pgpool:
     deploy:
       labels:
-          - traefik.frontend.rule=Host:${SUBDOMAIN}.${DOMAIN}
-          - traefik.frontend.passHostHeader=true
-          - traefik.enable=true
-          - traefik.port=5430
-          - traefik.tags=${TRAEFIK_PUBLIC_TAG}
-          - traefik.docker.network=${TRAEFIK_PUBLIC_NETWORK}
-          # Traefik service that listens to HTTP
-          - traefik.redirectorservice.frontend.entryPoints=http
-          - traefik.redirectorservice.frontend.redirect.entryPoint=https
-          # Traefik service that listens to HTTPS
-          - traefik.webservice.frontend.entryPoints=https
+        - "traefik.enable=true"
+        - "traefik.docker.network=${TRAEFIK_PUBLIC_NETWORK}"
+        - "traefik.tcp.routers.pgpool.entrypoints=pg"
+        - "traefik.tcp.routers.pgpool.rule=HostSNI(`*`)"
+        - "traefik.tcp.routers.pgpool.service=pgpool-postdock"
+        - "traefik.tcp.services.pgpool-postdock.loadbalancer.server.port=5432"
+
 
   pgadmin:
     deploy:
       labels:
-          - traefik.frontend.rule=Host:pgadmin.${SUBDOMAIN}.${DOMAIN}
-          - traefik.frontend.passHostHeader=true
-          - traefik.enable=true
-          - traefik.port=5050
-          - traefik.tags=${TRAEFIK_PUBLIC_TAG}
-          - traefik.docker.network=${TRAEFIK_PUBLIC_NETWORK}
-          # Traefik service that listens to HTTP
-          - traefik.redirectorservice.frontend.entryPoints=http
-          - traefik.redirectorservice.frontend.redirect.entryPoint=https
-          # Traefik service that listens to HTTPS
-          - traefik.webservice.frontend.entryPoints=https
+        - "traefik.enable=true"
+        - "traefik.docker.network=${TRAEFIK_PUBLIC_NETWORK}"
+        - "traefik.http.routers.pgadmin.entrypoints=websecure"
+        - "traefik.http.routers.pgadmin.rule=Host(`pgadmin.${SUBDOMAIN}.${DOMAIN}`)"
+        - "traefik.http.routers.pgadmin.tls.certresolver=cloudflare"
