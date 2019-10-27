@@ -8,6 +8,7 @@ services:
       - "traefik.docker.network=${TRAEFIK_PUBLIC_NETWORK}"
       - "traefik.tcp.routers.pgbackup.entrypoints=ssh"
       - "traefik.tcp.routers.pgbackup.rule=HostSNI(`*`)"
+      - "traefik.tcp.services.pgbackup.loadbalancer.server.port=22"
 
   pgpool:
     labels:
@@ -25,3 +26,4 @@ services:
       - "traefik.http.routers.pgadmin.entrypoints=websecure"
       - "traefik.http.routers.pgadmin.rule=Host(`pgadmin.${SUBDOMAIN}.${DOMAIN}`)"
       - "traefik.http.routers.pgadmin.tls.certresolver=cloudflare"
+      - "traefik.http.services.pgadmin.loadbalancer.server.port=80"

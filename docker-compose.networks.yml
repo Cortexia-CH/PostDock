@@ -5,7 +5,7 @@ networks:
     external: true
     name: ${TRAEFIK_PUBLIC_NETWORK}
 
-  default:
+  postgres:
     external: true
     name: ${POSTGRES_NETWORK}
 
@@ -13,14 +13,14 @@ services:
   pgbackup:
     networks:
       - traefik
-      - default
+      - postgres
 
   pgpool:
     networks:
       - traefik
-      - default
+      - postgres
 
   pgadmin:
     networks:
       - traefik
-      - default
+      - postgres
