@@ -18,8 +18,8 @@ services:
         - "traefik.docker.network=${TRAEFIK_PUBLIC_NETWORK}"
         - "traefik.tcp.routers.pgpool.entrypoints=pg"
         - "traefik.tcp.routers.pgpool.rule=HostSNI(`*`)"
-        - "traefik.tcp.routers.pgpool.service=pgpool-postdock"
-        - "traefik.tcp.services.pgpool-postdock.loadbalancer.server.port=5432"
+        - "traefik.tcp.routers.pgpool.service=pgpool"
+        - "traefik.tcp.services.pgpool.loadbalancer.server.port=5432"
 
 
   pgadmin:
