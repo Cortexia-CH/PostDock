@@ -1,91 +1,13 @@
-# environment
+###
+# Usual suspects... docker management
 
-# BACKUP_ID is used to specify which backup should be the target of given backup command, for instance:
-# $ BACKUP_ID=20190924T125045 make barman-check-backup
-#
-# All ids can be listed with
-# $ make barman-list-backup
-#
-# Barman allows you to use special keywords to identify a specific backup:
-# - last/latest: identifies the newest backup in the catalog
-# - first/oldest: identifies the oldest backup in the catalog
-BACKUP_ID ?= oldest
-
-readme:
-	open "doc/Forming a PostgreSQL cluster within Kubernetes - Dmitriy Paunin - Medium.pdf"
-
-check-env:
-# raise an error if .env file does not exist
-ifeq ($(wildcard .env),)
-	cp .sample.env .env
-	@echo "Generated .env"
-	@echo ".env file is missing. Create it first by calling make init"
-	@exit 1
-else
-include .env
-export
-endif
-
-check-keys:
-# create ssh keys if they do not exist yet
-ifeq ($(wildcard src/ssh/keys/id_rsa),)
-	@echo "no ssh-keys found. Creating it..."
-	make ssh-keys
-endif
+ps:
+	docker ps --format 'table {{.Image}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}'
 
 init: check-env
 	docker network create -d overlay ${POSTGRES_NETWORK}
 
-vars: check-env check-keys
-	@echo 'deployment'
-	@echo '  DOCKER_TAG: $(DOCKER_TAG)'
-	@echo '  SUBDOMAIN: $(SUBDOMAIN)'
-	@echo '  DOMAIN: $(DOMAIN)'
-	@echo '  STACK_NAME: $(STACK_NAME)'
-	@echo '  POSTGRES_NETWORK: $(POSTGRES_NETWORK)'
-	@echo '  TRAEFIK_PUBLIC_NETWORK: $(TRAEFIK_PUBLIC_NETWORK)'
-	@echo ''
-	@echo 'postgres'
-	@echo '  POSTGRES_PASSWORD: $(POSTGRES_PASSWORD)'
-	@echo '  POSTGRES_USER: $(POSTGRES_USER)'
-	@echo '  POSTGRES_DB: $(POSTGRES_DB)'
-	@echo '  DB_USERS: $(DB_USERS)'
-	@echo ''
-	@echo 'pgpool'
-	@echo '  PCP_USER: $(PCP_USER)'
-	@echo '  PCP_PASSWORD: $(PCP_PASSWORD)'
-	@echo '  CHECK_USER: $(CHECK_USER)'
-	@echo '  CHECK_PASSWORD: $(CHECK_PASSWORD)'
-	@echo ''
-	@echo 'pgadmin'
-	@echo '  PGADMIN_DEFAULT_EMAIL: $(PGADMIN_DEFAULT_EMAIL)'
-	@echo '  PGADMIN_DEFAULT_PASSWORD: $(PGADMIN_DEFAULT_PASSWORD)'
-	@echo ''
-	@echo 'barman'
-	@echo '  CLUSTER_NAME: $(CLUSTER_NAME)'
-	@echo '  REPLICATION_USER: $(REPLICATION_USER)'
-	@echo '  REPLICATION_PASSWORD: $(REPLICATION_PASSWORD)'
-	@echo '  REPLICATION_HOST: $(REPLICATION_HOST)'
-	@echo '  REPLICATION_DB: $(REPLICATION_DB)'
-	@echo '  REPMGR_NODES_TABLE: $(REPMGR_NODES_TABLE)'
-
-status: pg-master pgpool-enough barman-check barman-list-backup
-
-ssh-keys:
-	mkdir -p src/ssh/keys
-	rm src/ssh/keys/id_rsa* || true
-	cd src/ssh/keys && ssh-keygen -t rsa -C "internal@pgpool.com" -f id_rsa -N ''
-
-# docker management
-
-login:
-	docker login
-
-ps:
-	# docker ps --format 'table {{.Image}}\t{{.Status}}\t{{.Names}}'
-	docker ps --format 'table {{.Image}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}'
-
-config-local: check-env
+config: check-env
 	DOCKER_TAG=$(DOCKER_TAG) \
 	SUBDOMAIN=$(SUBDOMAIN) \
 	DOMAIN=$(DOMAIN) \
@@ -97,14 +19,11 @@ config-local: check-env
 		-f docker-compose.build.yml \
 	config > docker-stack.yml
 
-pull: config-local check-keys
+pull: config check-keys
 	docker-compose -f docker-stack.yml pull $(services)
 	docker-compose -f docker-stack.yml build --pull $(services)
 
-build: config-local check-env check-keys
-	docker-compose -f docker-stack.yml build $(services)
-
-up: config-local check-env check-keys
+up: config check-env check-keys
 	docker-compose -f docker-stack.yml up -d $(services)
 
 down:
@@ -116,10 +35,11 @@ stop:
 logs: up
 	docker-compose -f docker-stack.yml logs --tail 20 -f $(services)
 
+build: config check-env check-keys
+	docker-compose -f docker-stack.yml build $(services)
 
-## Release
-
-push-pg: check-env login ssh-keys
+push: check-env ssh-keys
+	docker login
 	# update tags
 	git tag -f qa
 	git push --tags --force
@@ -140,7 +60,7 @@ push-pg: check-env login ssh-keys
 	DOCKER_TAG=qa docker-compose -f docker-stack.yml build $(services)
 	DOCKER_TAG=qa docker-compose -f docker-stack.yml push $(services)
 
-deploy-pg: check-env
+deploy: check-env
 	DOCKER_TAG=qa \
 		SUBDOMAIN=pgcluster \
 		DOMAIN=cortexia.io \
@@ -156,6 +76,42 @@ deploy-pg: check-env
 	docker-auto-labels docker-stack.yml
 	docker stack deploy -c docker-stack.yml --with-registry-auth pgcluster
 
+###
+# Helpers for initialization
+
+check-env:
+# raise an error if .env file does not exist
+ifeq ($(wildcard .env),)
+	cp .sample.env .env
+	@echo "Generated \033[32m.env\033[0m"
+	@echo "  \033[31m>> Check its default values\033[0m"
+	@exit 1
+else
+include .env
+export
+endif
+
+check-keys:
+# create ssh keys if they do not exist yet
+ifeq ($(wildcard src/ssh/keys/id_rsa),)
+	@echo "no ssh-keys found. Creating it..."
+	make ssh-keys
+endif
+
+
+ssh-keys:
+	mkdir -p src/ssh/keys
+	rm src/ssh/keys/id_rsa* || true
+	cd src/ssh/keys && ssh-keygen -t rsa -C "internal@pgpool.com" -f id_rsa -N ''
+
+
+###
+# Local administation
+
+status: pg-master pgpool-enough barman-check barman-list-backup
+
+readme:
+	open "doc/Forming a PostgreSQL cluster within Kubernetes - Dmitriy Paunin - Medium.pdf"
 
 # PostgreSQL
 
@@ -175,7 +131,6 @@ pg-master: check-env
 	@echo "\r\n--- pg-master ---"
 	docker-compose -f docker-stack.yml exec pgmaster bash -c \
 		'/usr/local/bin/cluster/healthcheck/is_major_master.sh'
-
 
 # pgpool
 
