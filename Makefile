@@ -34,7 +34,7 @@ ifeq ($(wildcard src/ssh/keys/id_rsa),)
 endif
 
 init: check-env
-	docker network create --overlay ${POSTGRES_NETWORK}
+	docker network create -d overlay ${POSTGRES_NETWORK}
 
 vars: check-env check-keys
 	@echo 'deployment'
@@ -98,7 +98,6 @@ config-local: check-env
 	config > docker-stack.yml
 
 pull: config-local check-keys
-	docker network create $(POSTGRES_NETWORK)
 	docker-compose -f docker-stack.yml pull $(services)
 	docker-compose -f docker-stack.yml build --pull $(services)
 
