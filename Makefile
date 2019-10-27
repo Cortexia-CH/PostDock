@@ -23,16 +23,16 @@ pull: config check-keys
 	docker-compose -f docker-stack.yml pull $(services)
 	docker-compose -f docker-stack.yml build --pull $(services)
 
-up: config check-env check-keys
+up: check-stack check-keys
 	docker-compose -f docker-stack.yml up -d $(services)
 
-down:
-	docker-compose -f docker-stack.yml down $(services)
+down: check-stack
+	docker-compose -f docker-stack.yml down
 
-stop:
+stop: check-stack
 	docker-compose -f docker-stack.yml stop $(services)
 
-logs: up
+logs: check-stack
 	docker-compose -f docker-stack.yml logs --tail 20 -f $(services)
 
 build: config check-env check-keys
@@ -91,13 +91,19 @@ include .env
 export
 endif
 
+check-stack: check-env
+ifeq ($(wildcard docker-stack.yml),)
+	@echo "docker-stack.yml file is missing"
+	@echo ">> use \033[1mmake \033[32mconfig\033[0m"
+	@exit 1
+endif
+
 check-keys:
 # create ssh keys if they do not exist yet
 ifeq ($(wildcard src/ssh/keys/id_rsa),)
 	@echo "no ssh-keys found. Creating it..."
 	make ssh-keys
 endif
-
 
 ssh-keys:
 	mkdir -p src/ssh/keys
