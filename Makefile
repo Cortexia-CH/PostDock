@@ -120,14 +120,14 @@ logs: up
 
 ## Release
 
-push-qa: check-env login ssh-keys
+push-pg: check-env login ssh-keys
 	# update tags
 	git tag -f qa
 	git push --tags --force
 
 	# compile docker-compose file
 	DOCKER_TAG=qa \
-		SUBDOMAIN=pgcluster-qa \
+		SUBDOMAIN=pgcluster \
 		DOMAIN=cortexia.io \
 		docker-compose \
 			-f docker-compose.common.yml \
@@ -141,11 +141,11 @@ push-qa: check-env login ssh-keys
 	DOCKER_TAG=qa docker-compose -f docker-stack.yml build $(services)
 	DOCKER_TAG=qa docker-compose -f docker-stack.yml push $(services)
 
-deploy-qa: check-env
+deploy-pg: check-env
 	DOCKER_TAG=qa \
-		SUBDOMAIN=pgcluster-qa \
+		SUBDOMAIN=pgcluster \
 		DOMAIN=cortexia.io \
-		STACK_NAME=pgcluster-qa \
+		STACK_NAME=pgcluster \
 		docker-compose \
 			-f docker-compose.common.yml \
 			-f docker-compose.images.yml \
@@ -155,7 +155,7 @@ deploy-qa: check-env
 		config > docker-stack.yml
 
 	docker-auto-labels docker-stack.yml
-	docker stack deploy -c docker-stack.yml --with-registry-auth pgcluster-qa
+	docker stack deploy -c docker-stack.yml --with-registry-auth pgcluster
 
 
 # PostgreSQL
