@@ -1,2 +1,4 @@
 .env
 tmp
+docker-stack.yml
+src/ssh/keys

@@ -14,18 +14,25 @@ RUN chmod -R +x /usr/local/bin/dockerfile && ln -s /usr/local/bin/dockerfile/fun
 RUN install_deb_pkg "http://atalia.postgresql.org/morgue/r/repmgr/repmgr-common_4.0.6-2.pgdg+1_all.deb" 
 RUN install_deb_pkg "http://atalia.postgresql.org/morgue/r/repmgr/postgresql-$PG_MAJOR-repmgr_4.0.6-2.pgdg+1_amd64.deb" 
 
-# Inherited variables
-# ENV POSTGRES_PASSWORD monkey_pass
-# ENV POSTGRES_USER monkey_user
-# ENV POSTGRES_DB monkey_db
+# REQUIRED ENV VARS:
+ARG postgres_user=monkey_user
+ARG postgres_password=monkey_pass
+ARG postgres_db=monkey_db
+ARG replication_user=replication_user
+ARG replication_password=replication_pass
+ARG replication_db=replication_db
+
+ENV POSTGRES_USER $postgres_user
+ENV POSTGRES_PASSWORD $postgres_password
+ENV POSTGRES_DB $postgres_db
+ENV REPLICATION_USER $replication_user
+ENV REPLICATION_PASSWORD $replication_password
+ENV REPLICATION_DB $replication_db
 
 # Name of the cluster you want to start
 ENV CLUSTER_NAME pg_cluster
 
 # special repmgr db for cluster info
-ENV REPLICATION_DB replication_db
-ENV REPLICATION_USER replication_user
-ENV REPLICATION_PASSWORD replication_pass
 ENV REPLICATION_PRIMARY_PORT 5432
 
 
@@ -113,7 +120,7 @@ COPY ./pgsql/configs /var/cluster_configs
 
 ENV NOTVISIBLE "in users profile"
 
-COPY ./ssh /tmp/.ssh
+ADD ./ssh /tmp/.ssh
 RUN mv /tmp/.ssh/sshd_start /usr/local/bin/sshd_start && chmod +x /usr/local/bin/sshd_start
 
 EXPOSE 22

@@ -24,22 +24,27 @@ RUN  apt-get install -y postgresql-client-11
 
 
 RUN install_deb_pkg "http://launchpadlibrarian.net/160156688/libmemcached10_1.0.8-1ubuntu2_amd64.deb" "libmemcached10"
-RUN install_deb_pkg "http://security-cdn.debian.org/debian-security/pool/updates/main/o/openssl/libssl1.0.0_1.0.1t-1+deb8u11_amd64.deb" "libssl1.0.0"
+RUN install_deb_pkg "http://security-cdn.debian.org/debian-security/pool/updates/main/o/openssl/libssl1.0.0_1.0.1t-1+deb8u12_amd64.deb" "libssl1.0.0"
 RUN install_deb_pkg "http://atalia.postgresql.org/morgue/p/pgpool2/libpgpool0_3.7.5-2.pgdg90+1_amd64.deb" "libpgpool0"
 RUN install_deb_pkg "http://atalia.postgresql.org/morgue/p/pgpool2/pgpool2_3.7.5-2.pgdg90+1_amd64.deb" "pgpool2"
 
 RUN  wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && \
      tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 
-COPY ./ssh /tmp/.ssh
+ADD ./ssh /tmp/.ssh
 RUN mv /tmp/.ssh/sshd_start /usr/local/bin/sshd_start && chmod +x /usr/local/bin/sshd_start
 COPY ./pgpool/bin /usr/local/bin/pgpool
 COPY ./pgpool/configs /var/pgpool_configs
 
 RUN chmod +x -R /usr/local/bin/pgpool
 
-ENV CHECK_USER replication_user
-ENV CHECK_PASSWORD replication_pass
+# REQUIRED ENV VARS:
+ARG postgres_user=monkey_user
+ARG postgres_password=monkey_pass
+
+ENV CHECK_USER $postgres_user
+ENV CHECK_PASSWORD $postgres_password
+
 ENV CHECK_PGCONNECT_TIMEOUT 10
 ENV WAIT_BACKEND_TIMEOUT 120
 ENV REQUIRE_MIN_BACKENDS 0
