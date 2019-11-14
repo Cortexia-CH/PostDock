@@ -60,7 +60,7 @@ ENV REPLICATION_DB $replication_db
 
 EXPOSE 22
 
-COPY ./ssh /tmp/.ssh
+ADD ./ssh /tmp/.ssh
 RUN mv /tmp/.ssh/sshd_start /usr/local/bin/sshd_start && chmod +x /usr/local/bin/sshd_start
 COPY ./barman/configs/barman.conf /etc/barman.conf
 COPY ./barman/configs/upstream.conf $UPSTREAM_CONFIG_FILE

@@ -120,7 +120,7 @@ COPY ./pgsql/configs /var/cluster_configs
 
 ENV NOTVISIBLE "in users profile"
 
-COPY ./ssh /tmp/.ssh
+ADD ./ssh /tmp/.ssh
 RUN mv /tmp/.ssh/sshd_start /usr/local/bin/sshd_start && chmod +x /usr/local/bin/sshd_start
 
 EXPOSE 22

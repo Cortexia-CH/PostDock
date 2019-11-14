@@ -4,20 +4,16 @@
 ps:
 	docker ps --format 'table {{.Image}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}'
 
-init: check-env
-	docker network create -d overlay ${POSTGRES_NETWORK}
+init: check-env ssh-keys
+	docker network create -d overlay ${POSTGRES_NETWORK} || true
 
 config: check-env
 	DOCKER_TAG=$(DOCKER_TAG) \
 	SUBDOMAIN=$(SUBDOMAIN) \
 	DOMAIN=$(DOMAIN) \
-	docker-compose \
-		-f docker-compose.common.yml \
-		-f docker-compose.networks.yml \
-		-f docker-compose.dev.labels.yml \
-		-f docker-compose.dev.yml \
-		-f docker-compose.build.yml \
-	config > docker-stack.yml
+		docker-compose \
+			-f docker-compose.yml \
+		config > docker-stack.yml
 
 pull: config check-keys
 	docker-compose -f docker-stack.yml pull $(services)
@@ -41,40 +37,19 @@ build: config check-env check-keys
 push: check-env ssh-keys
 	docker login
 	# update tags
-	git tag -f qa
+	git tag -f prod
 	git push --tags --force
 
-	# compile docker-compose file
-	DOCKER_TAG=qa \
-		SUBDOMAIN=pgcluster \
-		DOMAIN=cortexia.io \
-		docker-compose \
-			-f docker-compose.common.yml \
-			-f docker-compose.images.yml \
-			-f docker-compose.networks.yml \
-			-f docker-compose.volumes-placement.yml \
-			-f docker-compose.build.yml \
-		config > docker-stack.yml
-
 	# build docker image
-	DOCKER_TAG=qa docker-compose -f docker-stack.yml build $(services)
-	DOCKER_TAG=qa docker-compose -f docker-stack.yml push $(services)
-
-deploy: check-env
-	DOCKER_TAG=qa \
+	DOCKER_TAG=prod \
 		SUBDOMAIN=pgcluster \
 		DOMAIN=cortexia.io \
-		STACK_NAME=pgcluster \
-		docker-compose \
-			-f docker-compose.common.yml \
-			-f docker-compose.images.yml \
-			-f docker-compose.networks.yml \
-			-f docker-compose.volumes-placement.yml \
-			-f docker-compose.deploy.yml \
-		config > docker-stack.yml
+		docker-compose build $(services)
+	DOCKER_TAG=prod \
+		SUBDOMAIN=pgcluster \
+		DOMAIN=cortexia.io \
+		docker-compose push $(services)
 
-	docker-auto-labels docker-stack.yml
-	docker stack deploy -c docker-stack.yml --with-registry-auth pgcluster
 
 ###
 # Helpers for initialization
@@ -233,3 +208,9 @@ barman-delete-backup: check-env
 	@echo "\r\n--- barman-delete-backup ---"
 	docker-compose -f docker-stack.yml exec pgbackup bash -c \
 		'barman check-backup `barman list-server --minimal` $(BACKUP_ID)'
+
+barman-fix-wal:
+	# see for explanations:
+	# https://groups.google.com/forum/#!topic/pgbarman/M-eFUCA1nHA
+	docker-compose -f docker-stack.yml exec pgbackup bash -c \
+		'barman switch-xlog --force `barman list-server --minimal`'
