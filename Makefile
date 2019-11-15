@@ -84,6 +84,8 @@ ssh-keys:
 	mkdir -p src/ssh/keys
 	rm src/ssh/keys/id_rsa* || true
 	cd src/ssh/keys && ssh-keygen -t rsa -C "internal@pgpool.com" -f id_rsa -N ''
+	chmod 500 src/ssh/keys/id_rsa
+	ssh-add src/ssh/keys/id_rsa
 
 
 ###
