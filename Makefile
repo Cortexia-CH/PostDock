@@ -6,6 +6,8 @@ ps:
 
 init: check-env ssh-keys
 	docker network create -d overlay ${POSTGRES_NETWORK} || true
+	chmod 700 src/ssh/keys/id_rsa
+	ssh-add src/ssh/keys/id_rsa
 
 config: check-env
 	DOCKER_TAG=$(DOCKER_TAG) \
@@ -34,7 +36,21 @@ logs: check-stack
 build: config check-env check-keys
 	docker-compose -f docker-stack.yml build $(services)
 
-push: check-env ssh-keys
+push-qa: check-env ssh-keys
+	docker login
+	# update tags
+	git tag -f qa
+	git push --tags --force
+
+	# build docker image
+	DOCKER_TAG=qa \
+		SUBDOMAIN=pgcluster-qa \
+		docker-compose build $(services)
+	DOCKER_TAG=qa \
+		SUBDOMAIN=pgcluster-qa \
+		docker-compose push $(services)
+		
+push-prod: check-env ssh-keys
 	docker login
 	# update tags
 	git tag -f prod
@@ -43,11 +59,9 @@ push: check-env ssh-keys
 	# build docker image
 	DOCKER_TAG=prod \
 		SUBDOMAIN=pgcluster \
-		DOMAIN=cortexia.io \
 		docker-compose build $(services)
 	DOCKER_TAG=prod \
 		SUBDOMAIN=pgcluster \
-		DOMAIN=cortexia.io \
 		docker-compose push $(services)
 
 
@@ -84,8 +98,6 @@ ssh-keys:
 	mkdir -p src/ssh/keys
 	rm src/ssh/keys/id_rsa* || true
 	cd src/ssh/keys && ssh-keygen -t rsa -C "internal@pgpool.com" -f id_rsa -N ''
-	chmod 500 src/ssh/keys/id_rsa
-	ssh-add src/ssh/keys/id_rsa
 
 
 ###

@@ -18,6 +18,7 @@ volumes:
 
 services:
     pgmaster:
+        image: cortexia/pginstance
         build:
             context: ./src
             dockerfile: Postgres-11-Repmgr-4.0.Dockerfile
@@ -52,9 +53,6 @@ services:
             REPLICATION_DB: ${REPLICATION_DB}
             REPLICATION_USER: ${REPLICATION_USER}
             REPLICATION_PASSWORD: ${REPLICATION_PASSWORD}
-            
-        ports:
-            - 5422:5432
         volumes:
             - pgmaster:/var/lib/postgresql/data
             - ./src/ssh/keys/:/tmp/.ssh/keys
@@ -64,6 +62,7 @@ services:
                     - pgmaster
 #<<< Branch 1
     pgslave1:
+        image: cortexia/pginstance
         build:
             context: ./src
             dockerfile: Postgres-11-Repmgr-4.0.Dockerfile
@@ -87,8 +86,6 @@ services:
             CLEAN_OVER_REWIND: 1
             CONFIGS_DELIMITER_SYMBOL: ;
             CONFIGS: "max_replication_slots:10" #some overrides
-        ports:
-            - 5441:5432
         volumes:
             - pgslave1:/var/lib/postgresql/data
             - ./src/ssh/keys:/tmp/.ssh/keys
@@ -100,6 +97,7 @@ services:
 #>>> Branch 1
 #<<< Branch 2
     pgslave3:
+        image: cortexia/pginstance
         build:
             context: ./src
             dockerfile: Postgres-11-Repmgr-4.0.Dockerfile
@@ -124,8 +122,6 @@ services:
             CLEAN_OVER_REWIND: 1
             CONFIGS_DELIMITER_SYMBOL: ;
             CONFIGS: "listen_addresses:'*'"
-        ports:
-            - 5443:5432
         volumes:
             - pgslave3:/var/lib/postgresql/data
             - ./src/ssh/keys:/tmp/.ssh/keys
@@ -136,6 +132,7 @@ services:
 
 #>>> Branch 2
     pgbackup:
+        image: cortexia/pgbackup
         build:
             context: ./src
             dockerfile: Barman-2.4-Postgres-11.Dockerfile
@@ -171,6 +168,7 @@ services:
                 aliases:
                     - pgbackup
     pgpool:
+        image: cortexia/pgpool
         build:
             context: ./src
             dockerfile: Pgpool-3.7-Postgres-11.Dockerfile
