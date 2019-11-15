@@ -5,7 +5,7 @@ ps:
 	docker ps --format 'table {{.Image}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}'
 
 init: check-env ssh-keys
-	docker network create -d overlay ${POSTGRES_NETWORK} || true
+	docker network create ${POSTGRES_NETWORK} || true
 	chmod 700 src/ssh/keys/id_rsa
 	ssh-add src/ssh/keys/id_rsa
 
