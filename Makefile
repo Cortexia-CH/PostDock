@@ -101,7 +101,18 @@ ssh-keys:
 
 
 ###
-# Local administation
+# Remote Administation
+
+psql:
+	psql -p $(PGPOOL_LISTEN_PORT) -U postgres -h $(SUBDOMAIN).$(DOMAIN)
+
+ssh:
+	ssh-add src/ssh/keys/id_rsa
+	ssh -p $(BARMAN_LISTEN_PORT) postgres@pgbackup.$(SUBDOMAIN).$(DOMAIN)
+
+
+###
+# Local Administation
 
 status: pg-master pgpool-enough barman-check barman-list-backup
 
